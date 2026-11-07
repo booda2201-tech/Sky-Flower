@@ -1,0 +1,74 @@
+﻿$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$rose-soft: #d05875;
+$rose-ink: #8a2a4a;
+$ink: #3b2129;
+
+:host {
+  display: block;
+}
+
+// ---- footer --------------------------------------------------------------------------
+.foot {
+  display: grid;
+  justify-items: center;
+  gap: 1.2rem;
+  padding: 3.5rem 1.5rem 6rem;
+  border-top: 1px solid rgb(181 66 91 / 0.14);
+  background: #f3e6dc;
+  text-align: center;
+
+  &__brand {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    color: $ink;
+    em {
+      font-style: italic;
+      color: #d05875;
+    }
+  }
+  &__info {
+    max-width: 44rem;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: rgb(59 33 41 / 0.72);
+    a {
+      color: $rose-ink;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    a {
+      color: rgb(59 33 41 / 0.8);
+      transition: color 0.4s $ease;
+      &:hover {
+        color: $rose-ink;
+      }
+    }
+  }
+  small {
+    font-size: 0.7rem;
+    color: rgb(59 33 41 / 0.5);
+  }
+  &__admin {
+    color: inherit;
+    opacity: 0.7;
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  }
+}

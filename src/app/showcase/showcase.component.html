@@ -1,0 +1,151 @@
+<!-- ====================================================================================
+     SHOWCASE - filterable luxury catalogue
+     ==================================================================================== -->
+<section id="collections" class="sc" aria-labelledby="sc-title">
+  <div class="sc__bg" aria-hidden="true"></div>
+
+  <div class="sc__wrap">
+    <header class="sc__head">
+      <div>
+        <p class="sc__eyebrow" data-aos="fade-up">
+          <span></span> {{ i18n.t('sc.eyebrow') }}
+        </p>
+        <h2 id="sc-title" class="sc__title" data-aos="fade-up" data-aos-delay="80">
+          {{ i18n.t('sc.title.a') }} <em>{{ i18n.t('sc.title.em') }}</em>
+        </h2>
+        <p class="sc__ar" [attr.lang]="i18n.other()" data-aos="fade-up" data-aos-delay="140">{{ i18n.alt('sc.sub') }}</p>
+      </div>
+      <p class="sc__intro" data-aos="fade-up" data-aos-delay="200">{{ i18n.t('sc.intro') }}</p>
+    </header>
+
+    <!-- ------------------------------ controls ------------------------------ -->
+    <div id="collections-controls" class="sc__controls" data-aos="fade-up" data-aos-delay="120">
+      <div class="sc__chips" role="tablist" [attr.aria-label]="i18n.t('sc.filterAria')">
+        @for (f of filters; track f.id) {
+          <button type="button" role="tab" class="sc__chip" [class.is-active]="activeFilter() === f.id"
+            [attr.aria-selected]="activeFilter() === f.id" (click)="setFilter(f.id)">
+            <span>{{ i18n.pick(f.labelEn, f.labelAr) }}</span>
+            <sup>{{ counts().get(f.id) }}</sup>
+          </button>
+        }
+      </div>
+
+      <div class="sc__sort" role="group" [attr.aria-label]="i18n.t('sc.sortAria')">
+        @for (s of sorts; track s.id) {
+          <button type="button" [class.is-active]="activeSort() === s.id" [attr.aria-pressed]="activeSort() === s.id"
+            (click)="setSort(s.id)">
+            {{ i18n.t(s.label) }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ------------------------------ product grid ------------------------------ -->
+    <div class="sc__grid" appDeck>
+      @for (p of visible(); track p.id; let i = $index) {
+        <article class="sc-card backdrop-blur-xl bg-white/70 border border-line" appTilt="6" [class.is-open]="openId() === p.id" [class.is-soldout]="p.soldOut" [style.--accent]="p.accent"
+          data-aos="fade-up" [attr.data-aos-delay]="(i % 3) * 110">
+          <span class="sc-card__glow" aria-hidden="true"></span>
+
+          <!-- media -->
+          <div class="sc-card__media">
+            <img class="sc-card__img" [src]="img(p.imageId, 640)" [attr.srcset]="srcset(p.imageId)"
+              [style.object-position]="p.imageFocus ?? null"
+              sizes="(min-width: 1200px) 400px, (min-width: 768px) 45vw, 92vw"
+              [alt]="i18n.pick(p.nameEn, p.nameAr) + ' - ' + i18n.pick(p.taglineEn, p.taglineAr)"
+              loading="lazy" decoding="async" width="640" height="800" />
+            <img class="sc-card__img sc-card__img--alt" [src]="img(p.imageAltId, 640)" [alt]="''" loading="lazy"
+              decoding="async" width="640" height="800" />
+            <span class="sc-card__shade" aria-hidden="true"></span>
+
+            @if (p.badge) {
+              <span class="sc-card__badge">{{ i18n.pick(p.badge, badgeAr[p.badge]) }}</span>
+            }
+
+            <button type="button" class="sc-card__heart" [class.is-on]="store.isWished(p.id)"
+              [attr.aria-pressed]="store.isWished(p.id)" (click)="store.toggleWish(p.id)"
+              [attr.aria-label]="i18n.t(store.isWished(p.id) ? 'wish.remove' : 'wish.save', { name: i18n.pick(p.nameEn, p.nameAr) })">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </button>
+
+            <!-- floating price tag -->
+            <div class="sc-card__price">
+              <div class="sc-card__price-inner">
+                @if (p.compareAtPrice) {
+                  <s>{{ formatEgp(p.compareAtPrice) }}</s>
+                }
+                <b>{{ formatEgp(p.price) }}</b>
+              </div>
+            </div>
+
+            <!-- details sheet: slides over the photo so the card never changes height -->
+            <div class="sc-card__panel" [id]="'sc-more-' + p.id" [class.is-open]="openId() === p.id"
+              [attr.aria-hidden]="openId() !== p.id" [attr.inert]="openId() === p.id ? null : ''">
+              <h4 class="sc-card__incl-title">{{ i18n.pick(p.nameEn, p.nameAr) }}</h4>
+              <p class="sc-card__full">{{ i18n.pick(p.descriptionEn, p.descriptionAr) }}</p>
+              <ul class="sc-card__tags" [attr.aria-label]="i18n.t('hero.highlights')">
+                @for (tag of i18n.pick(p.tags, p.tagsAr); track tag) {
+                  <li>{{ tag }}</li>
+                }
+              </ul>
+              <h5 class="sc-card__incl-sub">{{ i18n.t('sc.included') }}</h5>
+              <ul class="sc-card__includes" [attr.aria-label]="i18n.t('sc.included')">
+                @for (item of i18n.pick(p.includes, p.includesAr); track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+
+          <!-- body -->
+          <div class="sc-card__body">
+            <!-- eyebrow: where we ship + lead time -->
+            <div class="sc-card__meta">
+              <span class="sc-card__ship">{{ i18n.t('sc.shipsAll') }}</span>
+              <span class="sc-card__lead">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+                {{ i18n.pick(p.leadTime, leadTimeAr[p.leadTime]) }}
+              </span>
+            </div>
+
+            <!-- name: full-width title, second language underneath -->
+            <div class="sc-card__titles">
+              <h3>{{ i18n.pick(p.nameEn, p.nameAr) }}</h3>
+              <span [attr.lang]="i18n.other()">{{ i18n.pickAlt(p.nameEn, p.nameAr) }}</span>
+            </div>
+
+            <p class="sc-card__desc">{{ i18n.pick(p.descriptionEn, p.descriptionAr) }}</p>
+
+            <!-- footer: round details toggle + add to bag -->
+            <div class="sc-card__foot">
+              <button type="button" class="sc-card__more" [attr.aria-expanded]="openId() === p.id"
+                [attr.aria-controls]="'sc-more-' + p.id" (click)="toggleDetails(p.id)"
+                [attr.aria-label]="i18n.t(openId() === p.id ? 'sc.less' : 'sc.details')"
+                [attr.title]="i18n.t(openId() === p.id ? 'sc.less' : 'sc.details')">
+                @if (openId() === p.id) {
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                } @else {
+                  <!-- eye: "take a closer look" -->
+                  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                }
+                <span>{{ i18n.t(openId() === p.id ? 'sc.closeShort' : 'sc.detailsShort') }}</span>
+              </button>
+
+              <button type="button" class="sc-card__cta" appMagnetic="0.2" [disabled]="p.soldOut" (click)="store.add(p)">
+                <span>{{ i18n.t(p.soldOut ? 'sc.soldOut' : 'common.addToBag') }}</span>
+                <b>{{ formatEgp(p.price) }}</b>
+              </button>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <p class="sc__empty">{{ i18n.t('sc.empty') }}</p>
+      }
+    </div>
+  </div>
+</section>

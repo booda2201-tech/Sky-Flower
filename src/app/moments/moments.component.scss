@@ -1,0 +1,332 @@
+:host {
+  display: block;
+}
+
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$rose-soft: #d05875;
+$rose-ink: #8a2a4a;
+$rose: #b5425b;
+
+.mo {
+  position: relative;
+  padding: 5rem 0 5.5rem;
+  background: linear-gradient(180deg, #f7efe6 0%, #fbf6f0 100%);
+  overflow: hidden;
+}
+
+.mo__wrap {
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+
+  @media (min-width: 768px) {
+    padding-inline: 3rem;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 4.5rem;
+  }
+}
+
+.mo__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 2.2rem;
+}
+
+.mo__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: $rose-ink;
+
+  span {
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $rose-soft);
+  }
+}
+
+.mo__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 5.4vw, 4.2rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: #6e1f3b;
+
+  em {
+    font-style: italic;
+    font-weight: 400;
+    color: #d05875;
+  }
+}
+
+.mo__sub {
+  margin: 0.8rem 0 0;
+  color: rgb(59 33 41 / 0.72);
+}
+
+.mo__nav {
+  display: flex;
+  flex: none;
+  gap: 0.6rem;
+}
+
+.mo__arrow {
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 50%;
+  color: #3b2129;
+  background: rgb(255 255 255 / 0.8);
+  border: 1px solid rgb(181 66 91 / 0.2);
+  box-shadow: 0 12px 28px -14px rgb(110 31 59 / 0.4);
+  transition: background-color 0.4s $ease, color 0.4s $ease, transform 0.5s $ease;
+
+  &:hover {
+    color: #fff;
+    background: $rose;
+    transform: translateY(-2px);
+  }
+  &:focus-visible {
+    outline: 2px solid $rose-soft;
+    outline-offset: 3px;
+  }
+}
+
+.mo__more {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.6rem;
+}
+
+.mo__link {
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $rose-ink;
+  border-bottom: 1px solid rgb(181 66 91 / 0.35);
+  padding-bottom: 0.2rem;
+  transition: color 0.4s $ease, border-color 0.4s $ease;
+
+  &:hover {
+    color: $rose;
+    border-color: $rose;
+  }
+}
+
+// ---- carousel ----------------------------------------------------------------------------
+.mo__track {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.4rem max(1.5rem, calc((100vw - 88rem) / 2 + 4.5rem)) 1.6rem;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: max(1.5rem, calc((100vw - 88rem) / 2 + 4.5rem));
+  scrollbar-width: none;
+  outline: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.mo-card {
+  position: relative;
+  flex: 0 0 min(58vw, 16rem);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 1.8rem;
+  scroll-snap-align: start;
+  color: #fff;
+  background: #fce4ec;
+  box-shadow: 0 28px 56px -34px rgb(110 31 59 / 0.5);
+  isolation: isolate;
+  transition: transform 0.7s $ease, box-shadow 0.6s $ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 38px 70px -30px rgb(110 31 59 / 0.6);
+
+    img {
+      transform: scale(1.05);
+    }
+    .mo-card__play {
+      transform: translate(-50%, -50%) scale(1.1);
+      background: $rose;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    flex-basis: calc((min(100vw, 88rem) - 9rem - 4rem) / 5);
+  }
+}
+
+.mo-card__btn {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid $rose-soft;
+    outline-offset: -3px;
+    border-radius: inherit;
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.6s $ease;
+  }
+}
+
+.mo-card__shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(0deg, rgb(59 21 33 / 0.55) 0%, transparent 32%),
+    linear-gradient(180deg, rgb(59 21 33 / 0.3) 0%, transparent 22%);
+}
+
+.mo-card__views {
+  position: absolute;
+  top: 0.9rem;
+  inset-inline-start: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: rgb(59 33 41 / 0.42);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.mo-card__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 50%;
+  color: #fff;
+  background: rgb(181 66 91 / 0.82);
+  border: 1px solid rgb(255 255 255 / 0.55);
+  box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.5);
+  transform: translate(-50%, -50%);
+  transition: transform 0.5s $ease, background-color 0.4s $ease;
+
+  svg {
+    margin-inline-start: 0.15rem;
+  }
+}
+
+// ---- lightbox ----------------------------------------------------------------------------
+.mo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(30 10 18 / 0.86);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: mo-fade 0.35s $ease;
+}
+
+.mo-modal__frame {
+  position: relative;
+  width: min(92vw, calc((100dvh - 2rem) * 9 / 16));
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 1.4rem;
+  background: #000;
+  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.8);
+
+  iframe,
+  video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    object-fit: cover;
+  }
+}
+
+.mo-modal__close {
+  position: absolute;
+  top: 1rem;
+  inset-inline-end: 1rem;
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 50%;
+  color: #fff;
+  background: rgb(255 255 255 / 0.14);
+  border: 1px solid rgb(255 255 255 / 0.4);
+  transition: background-color 0.4s $ease, transform 0.4s $ease;
+
+  &:hover {
+    background: $rose;
+    transform: rotate(90deg);
+  }
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+}
+
+@keyframes mo-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+:host-context([dir='rtl']) {
+  .mo__eyebrow > span {
+    transform: scaleX(-1);
+  }
+  .mo__arrow svg {
+    transform: scaleX(-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mo-card,
+  .mo-card__btn img,
+  .mo-card__play,
+  .mo-modal {
+    transition: none;
+    animation: none;
+  }
+}

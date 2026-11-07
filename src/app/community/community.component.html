@@ -1,0 +1,71 @@
+<!-- ====================================================================================
+     COMMUNITY - real social following + the shop
+     ==================================================================================== -->
+<section id="community" class="cm" aria-labelledby="cm-title">
+  <div class="cm__wrap">
+    <header class="cm__head">
+      <p class="cm__eyebrow" data-aos="fade-up"><span></span> {{ i18n.t('com.eyebrow') }}</p>
+      <h2 id="cm-title" class="cm__title" data-aos="fade-up" data-aos-delay="80">
+        {{ i18n.t('com.title.a') }} <em>{{ i18n.t('com.title.em') }}</em>
+      </h2>
+      <p class="cm__sub" data-aos="fade-up" data-aos-delay="140">{{ i18n.t('com.sub') }}</p>
+    </header>
+
+    <div class="cm__grid">
+      <!-- ------------------------------ social cards ------------------------------ -->
+      <ul class="cm__socials">
+        @for (s of socials; track s.id; let i = $index) {
+          <li data-aos="fade-up" [attr.data-aos-delay]="i * 90">
+            <a class="so backdrop-blur-xl bg-white/70 border border-line" [href]="s.href" target="_blank"
+              rel="noopener noreferrer" [attr.data-net]="s.id">
+              <span class="so__net">{{ s.label }}</span>
+              <span class="so__handle" dir="ltr">{{ s.handle }}</span>
+              @if (s.followers) {
+                <b class="so__n" dir="ltr">{{ s.followers }}</b>
+                <small>{{ i18n.t('com.followers') }}</small>
+              } @else {
+                <b class="so__n so__n--text">{{ i18n.t('com.videos') }}</b>
+                <small>{{ i18n.t('com.watchNow') }}</small>
+              }
+              @if (s.id === 'tiktok') {
+                <span class="so__extra"><b dir="ltr">{{ brand.tiktokLikes }}</b> {{ i18n.t('com.likes') }}</span>
+              }
+              <span class="so__go" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9" /></svg>
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+
+      <!-- ------------------------------ the shop ------------------------------ -->
+      <aside class="shop backdrop-blur-xl bg-white/70 border border-line" data-aos="fade-up" data-aos-delay="120">
+        <h3>{{ i18n.t('com.visit') }}</h3>
+        <ul class="shop__info">
+          <li>
+            <span class="shop__k">{{ i18n.t('com.address') }}</span>
+            <span>{{ i18n.pick(brand.addressEn, brand.addressAr) }}</span>
+          </li>
+          <li>
+            <span class="shop__k">{{ i18n.t('com.hours') }}</span>
+            <span>{{ i18n.pick(brand.hoursEn, brand.hoursAr) }}</span>
+          </li>
+          <li>
+            <span class="shop__k">{{ i18n.t('com.phone') }}</span>
+            <a [href]="'tel:' + brand.phone" dir="ltr">{{ brand.phone }}</a>
+          </li>
+        </ul>
+
+        <a class="shop__wa" [href]="whatsapp()" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2-5.4A8.4 8.4 0 1 1 21 11.5z" />
+          </svg>
+          <span>{{ i18n.t('com.whatsapp') }}</span>
+        </a>
+        <p class="shop__note">{{ i18n.t('sc.shipsAll') }}</p>
+      </aside>
+    </div>
+  </div>
+</section>

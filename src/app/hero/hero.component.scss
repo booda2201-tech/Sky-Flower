@@ -1,0 +1,890 @@
+:host {
+  display: block;
+}
+
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$rose-soft: #d05875;
+$rose-ink: #8a2a4a;
+$rose: #b5425b;
+$ink: #3b2129;
+$cream: #fbf6f0;
+
+// ======================================================================================
+// Section shell
+// The wrapper is ~3 screens tall; the hero inside it is pinned (sticky) for the whole
+// scroll while the WebGL camera dives from the full bouquet into the heart of one rose.
+// ======================================================================================
+.hero-wrap {
+  --hero-h: max(100svh, 34rem);
+  position: relative;
+  height: calc(var(--hero-h) * 3.1);
+}
+
+.hero {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: var(--hero-h);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(70% 60% at 88% 8%, #fce4ec 0%, transparent 70%),
+    radial-gradient(80% 60% at 4% 104%, rgb(250 214 224 / 0.55) 0%, transparent 66%),
+    linear-gradient(180deg, #fbf6f0 0%, #fff5f8 100%);
+
+  // Pre-animation state: JS adds .is-ready after setting the GSAP "from" values (no FOUC).
+  &:not(.is-ready) {
+    [data-reveal],
+    .hero__title,
+    .hero__lead,
+    .hero__ar,
+    .hero__ornament,
+    .hero__details {
+      visibility: hidden;
+    }
+  }
+}
+
+// The portal: a soft-edged hole opens at the light in the middle of the tunnel and grows to cover
+// the screen. The first section of the site is already sitting right behind the hero.
+@media (prefers-reduced-motion: no-preference) {
+  .hero {
+    z-index: 3;
+  }
+  .hero.is-portal {
+    pointer-events: none;
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent calc(var(--portal, -20) * 1%), #000 calc(var(--portal, -20) * 1% + 16%));
+    mask-image: radial-gradient(circle at 50% 50%, transparent calc(var(--portal, -20) * 1%), #000 calc(var(--portal, -20) * 1% + 16%));
+  }
+  .hero.is-through {
+    visibility: hidden;
+  }
+}
+
+// Users who prefer reduced motion get the plain, un-pinned hero.
+@media (prefers-reduced-motion: reduce) {
+  .hero-wrap {
+    height: auto;
+  }
+  .hero {
+    position: relative;
+  }
+  .hero__details {
+    display: none;
+  }
+}
+
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -4;
+  pointer-events: none;
+}
+
+.hero__bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0;
+  transform: scale(0.8);
+  will-change: transform, opacity;
+
+  &--a {
+    width: 54vmax;
+    height: 54vmax;
+    top: -22vmax;
+    left: -18vmax;
+    background: radial-gradient(circle, rgb(181 66 91 / 0.22), transparent 66%);
+  }
+  &--b {
+    width: 48vmax;
+    height: 48vmax;
+    right: -10vmax;
+    top: 4vh;
+    background: radial-gradient(circle, rgb(240 160 185 / 0.45), transparent 66%);
+  }
+  &--c {
+    width: 62vmax;
+    height: 30vmax;
+    left: 50%;
+    bottom: -20vmax;
+    translate: -50% 0;
+    background: radial-gradient(ellipse, rgb(208 88 117 / 0.28), transparent 66%);
+  }
+}
+
+.hero__page {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  opacity: 0;
+  background: #fff5f8;
+}
+
+.hero__canvas-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none; // pointer is tracked on window, so UI stays clickable
+
+  &.is-fallback {
+    background:
+      radial-gradient(circle at 18% 28%, rgb(181 66 91 / 0.16), transparent 40%),
+      radial-gradient(circle at 82% 62%, rgb(240 160 185 / 0.22), transparent 40%);
+  }
+}
+
+.hero__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+// Shown only when WebGL is unavailable.
+.hero__fallback {
+  position: absolute;
+  inset-block: 16% 22%;
+  inset-inline-end: 7%;
+  width: min(34vw, 26rem);
+  height: auto;
+  object-fit: cover;
+  border-radius: 999px 999px 2rem 2rem;
+  box-shadow: 0 50px 120px -40px rgb(110 31 59 / 0.34);
+
+  @media (max-width: 1023px) {
+    inset-inline: 0;
+    margin-inline: auto;
+    inset-block: 46% 18%;
+    width: min(60vw, 18rem);
+  }
+}
+
+// A soft cream veil behind the copy (the 3D bouquet sits on the other side); it clears on scroll.
+.hero__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 52% 62% at 24% 52%, rgb(251 246 240 / 0.7), rgb(251 246 240 / 0.4) 58%, transparent 80%),
+    radial-gradient(ellipse 130% 100% at 50% 50%, transparent 62%, rgb(251 246 240 / 0.45) 100%);
+}
+
+.hero__grain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+// ======================================================================================
+// Copy
+// ======================================================================================
+.hero__grid {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  // room for the fixed navigation bar above the copy
+  padding: 5rem 1.5rem 0;
+
+  @media (min-width: 768px) {
+    padding-top: 5.5rem;
+    padding-inline: 3rem;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 4.5rem;
+  }
+  @media (max-width: 1023px) {
+    flex: none;
+    justify-content: center;
+    padding-top: 5.2rem;
+  }
+}
+
+.hero__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  will-change: transform, opacity;
+
+  @media (min-width: 1024px) {
+    align-items: flex-start;
+    max-width: min(41rem, 53%);
+    text-align: start;
+  }
+}
+
+.hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1.2rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: $rose-ink;
+
+  @media (max-width: 1023px) {
+    margin-bottom: 0.8rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.32em;
+  }
+}
+
+.hero__eyebrow-dash {
+  width: clamp(2rem, 6vw, 3.5rem);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, $rose-soft);
+}
+
+.hero__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.9rem, 11vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  color: #6e1f3b;
+
+  @media (min-width: 1024px) {
+    font-size: clamp(3.8rem, 5.4vw, 6.6rem);
+  }
+
+  .hero__line {
+    display: block;
+    padding-bottom: 0.1em; // descenders stay inside SplitText's overflow mask
+  }
+  em {
+    font-style: italic;
+    font-weight: 400;
+    color: $rose-soft;
+    padding-inline-end: 0.06em;
+  }
+}
+
+.hero__ar {
+  margin: 0.3rem 0 0;
+  font-family: var(--font-ar-display);
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  line-height: 1.5;
+  color: $rose-ink;
+}
+
+.hero__ornament {
+  display: block;
+  width: min(260px, 60vw);
+  height: 1px;
+  margin: 1.2rem 0;
+  transform-origin: left center;
+  background: linear-gradient(90deg, $rose-soft, rgb(208 88 117 / 0.05));
+
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.hero__lead {
+  max-width: 32rem;
+  margin: 0;
+  font-size: 1.04rem;
+  line-height: 1.75;
+  color: rgb(59 33 41 / 0.86);
+
+  @media (min-width: 1280px) {
+    font-size: 1.1rem;
+  }
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.hero__ctas {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.9rem;
+
+  @media (max-width: 1023px) {
+    margin-top: 1.1rem;
+  }
+}
+
+.hero__btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  min-width: 13rem;
+  padding: 1rem 1.9rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: $ink;
+  overflow: hidden;
+  will-change: transform;
+  transition: box-shadow 0.6s $ease, background-color 0.6s $ease, border-color 0.6s $ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+  svg {
+    transition: transform 0.6s $ease;
+  }
+  &:hover svg {
+    transform: translateX(5px);
+  }
+
+  @media (max-width: 639px) {
+    min-width: 0;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    svg {
+      display: none;
+    }
+  }
+
+  &--primary {
+    color: #fff;
+    background: linear-gradient(120deg, $rose, #b5425b 45%, #8a2a4a);
+    box-shadow: 0 20px 55px -16px rgb(181 66 91 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.4);
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.38) 50%, transparent 70%);
+      transform: translateX(-120%);
+      transition: transform 1s $ease;
+    }
+    &:hover::before {
+      transform: translateX(120%);
+    }
+    &:hover {
+      box-shadow: 0 26px 70px -12px rgb(181 66 91 / 1), inset 0 1px 0 rgb(255 255 255 / 0.5);
+    }
+  }
+
+  &--ghost:hover {
+    background: rgb(181 66 91 / 0.1);
+    border-color: rgb(208 88 117 / 0.5);
+  }
+}
+
+// ======================================================================================
+// The dive: captions that take turns while the lens closes in on the rose
+// ======================================================================================
+.hero__details {
+  position: absolute;
+  z-index: 15;
+  display: grid;
+  inset-inline-start: 1.5rem;
+  inset-inline-end: 1.5rem;
+  bottom: 6.6rem;
+  pointer-events: none;
+
+  @media (min-width: 1024px) {
+    inset-inline-start: 4.5rem;
+    inset-inline-end: auto;
+    bottom: auto;
+    top: 50%;
+    width: min(25rem, 36vw);
+    translate: 0 -50%;
+  }
+}
+
+.hero__detail {
+  grid-area: 1 / 1;
+  padding: 1.4rem 1.6rem 1.5rem;
+  border-radius: 1.8rem;
+  color: $ink;
+  background: rgb(255 250 247 / 0.74);
+  border: 1px solid rgb(181 66 91 / 0.2);
+  box-shadow: 0 40px 90px -40px rgb(110 31 59 / 0.5);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+
+  h2 {
+    margin: 0.5rem 0 0.5rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    line-height: 1.1;
+    color: #6e1f3b;
+  }
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: rgb(59 33 41 / 0.82);
+  }
+}
+
+.hero__detail-k {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: $rose-ink;
+
+  b {
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: $rose-soft;
+  }
+  &::before {
+    content: '';
+    width: 1.6rem;
+    height: 1px;
+    background: $rose-soft;
+  }
+}
+
+// ======================================================================================
+// Bottom bar: stats + the featured creation
+// ======================================================================================
+.hero__bar {
+  position: relative;
+  z-index: 12;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 0 1.5rem 0.9rem;
+
+  @media (min-width: 768px) {
+    padding-inline: 3rem;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 4.5rem;
+  }
+  @media (max-width: 1023px) {
+    justify-content: center;
+    margin-top: auto; // pinned to the bottom: the bouquet fills the gap above
+    padding-bottom: 5.2rem; // leaves room for the floating action buttons
+  }
+}
+
+.hero__stats {
+  display: none;
+  gap: clamp(1.4rem, 3vw, 2.6rem);
+  margin: 0;
+
+  @media (min-width: 1024px) {
+    display: flex;
+  }
+
+  > div {
+    position: relative;
+    padding-inline-start: clamp(1.4rem, 3vw, 2.6rem);
+
+    &:first-child {
+      padding-inline-start: 0;
+    }
+    &:not(:first-child)::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      top: 0.2rem;
+      bottom: 0.2rem;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, rgb(181 66 91 / 0.3), transparent);
+    }
+  }
+
+  dt {
+    font-size: 0.62rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: rgb(59 33 41 / 0.65);
+  }
+  dd {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    margin: 0.3rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    line-height: 1;
+    color: $ink;
+
+    small {
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      color: $rose-ink;
+    }
+  }
+}
+
+.hero__pick {
+  --accent: #{$rose};
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.35rem 0.8rem;
+  width: min(100%, 28rem);
+  padding: 0.55rem 0.65rem 0.4rem 0.55rem;
+  border-radius: 1.7rem;
+  box-shadow: 0 30px 70px -34px rgb(110 31 59 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.6);
+  transition: border-color 0.6s $ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+}
+
+.hero__pick-img {
+  width: 3.1rem;
+  height: 3.9rem;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 0 0 1px rgb(181 66 91 / 0.18);
+}
+
+.hero__pick-body {
+  min-width: 0;
+  animation: hero-rise 0.7s $ease both;
+}
+
+.hero__card-title {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 400;
+  line-height: 1.1;
+  color: $ink;
+}
+
+.hero__card-ar {
+  margin: 0.1rem 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-ar-display);
+  font-size: 1rem;
+  line-height: 1.3;
+  color: $rose-ink;
+}
+
+.hero__add {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  background: linear-gradient(120deg, $rose-soft, $rose-ink);
+  box-shadow: 0 12px 30px -12px rgb(181 66 91 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.35);
+  transition: box-shadow 0.5s $ease, filter 0.5s $ease;
+
+  b {
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  &:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 16px 42px -10px rgb(181 66 91 / 1), inset 0 1px 0 rgb(255 255 255 / 0.45);
+  }
+
+  @media (max-width: 479px) {
+    padding-inline: 0.8rem;
+    span {
+      display: none;
+    }
+  }
+}
+
+.hero__heart {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: none;
+  border-radius: 50%;
+  color: $ink;
+  border: 1px solid rgb(181 66 91 / 0.24);
+  background: rgb(255 255 255 / 0.66);
+  transition: all 0.5s $ease;
+
+  svg {
+    fill: transparent;
+    transition: fill 0.4s $ease, transform 0.5s $ease;
+  }
+  &:hover {
+    border-color: rgb(181 66 91 / 0.6);
+  }
+  &.is-on {
+    color: $rose;
+    border-color: rgb(181 66 91 / 0.6);
+    svg {
+      fill: $rose;
+      transform: scale(1.12);
+    }
+  }
+}
+
+// Six segments, one per creation: the active one fills as the carousel counts down.
+.hero__dots {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.35rem;
+  padding-inline: 0.25rem;
+}
+
+.hero__dot {
+  flex: 1;
+  display: grid;
+  align-items: center;
+  height: 1.1rem;
+  padding: 0;
+
+  i {
+    position: relative;
+    display: block;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: rgb(181 66 91 / 0.18);
+    transition: background-color 0.4s $ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      background: $rose-soft;
+    }
+  }
+  &:hover i {
+    background: rgb(181 66 91 / 0.34);
+  }
+  &.is-active i {
+    background: rgb(181 66 91 / 0.28);
+    &::after {
+      transform: scaleX(var(--progress, 0));
+    }
+  }
+  &:focus-visible {
+    outline: 2px solid $rose-soft;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+// ======================================================================================
+// Footer bar & scroll cue
+// ======================================================================================
+.hero__foot {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem 1.1rem;
+
+  @media (min-width: 768px) {
+    padding-inline: 3rem;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 4.5rem;
+  }
+  @media (max-width: 1023px) {
+    display: none;
+  }
+}
+
+.hero__socials {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.66rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgb(59 33 41 / 0.8);
+
+  @media (min-width: 640px) {
+    gap: 2.2rem;
+  }
+}
+
+.hero__cue {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgb(59 33 41 / 0.8);
+}
+
+.hero__cue-line {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 2.4rem;
+  overflow: hidden;
+  background: rgb(181 66 91 / 0.1);
+
+  i {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent, $rose-soft);
+    transform: translateY(-100%);
+  }
+}
+
+// ======================================================================================
+// Floating action buttons (fixed, outside the section)
+// ======================================================================================
+.hero__fabs {
+  position: fixed;
+  z-index: 60;
+  right: max(1rem, env(safe-area-inset-right));
+  // Sits above SkyBot's launcher (3.4rem tall) with one gap between them.
+  bottom: calc(max(1.2rem, env(safe-area-inset-bottom)) + 3.4rem + 0.8rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  &:not(.is-ready) {
+    visibility: hidden;
+  }
+
+  // Phones: the bag lives in the bottom tab bar (MobileTabsComponent), so no floating buttons here.
+  @media (max-width: 639px) {
+    display: none;
+  }
+}
+
+.hero__fab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  color: $ink;
+  background: rgb(255 252 249 / 0.72);
+  border: 1px solid rgb(181 66 91 / 0.21);
+  box-shadow: 0 18px 40px -16px rgb(110 31 59 / 0.34);
+  will-change: transform;
+  transition: border-color 0.5s $ease, box-shadow 0.5s $ease, color 0.5s $ease, background-color 0.5s $ease;
+
+  &:hover {
+    color: $rose-ink;
+    border-color: rgb(208 88 117 / 0.6);
+    box-shadow: 0 0 32px -6px rgb(208 88 117 / 0.55), 0 18px 40px -16px rgb(110 31 59 / 0.34);
+  }
+}
+
+.hero__fab-count {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding-inline: 0.3rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, $rose, #8a2a4a);
+  box-shadow: 0 0 0 2px #fbf6f0;
+}
+
+.hero__fab-tip {
+  position: absolute;
+  right: calc(100% + 0.8rem);
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: $ink;
+  background: rgb(255 252 249 / 0.85);
+  border: 1px solid rgb(181 66 91 / 0.18);
+  opacity: 0;
+  transform: translateX(8px);
+  pointer-events: none;
+  transition: opacity 0.4s $ease, transform 0.5s $ease;
+
+  @media (hover: none) {
+    display: none;
+  }
+
+  .hero__fab:hover > &,
+  .hero__fab:focus-visible > & {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ======================================================================================
+// Keyframes
+// ======================================================================================
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+// ======================================================================================
+// Arabic (dir=rtl): mirror the purely decorative, direction-dependent pieces
+// ======================================================================================
+:host-context([dir='rtl']) {
+  // Glows + vignette are drawn for copy on the left; flip them so they sit behind the copy on the right.
+  .hero__bg,
+  .hero__vignette {
+    transform: scaleX(-1);
+  }
+  .hero__eyebrow-dash {
+    transform: scaleX(-1);
+  }
+  .hero__ornament {
+    transform-origin: right center;
+    background: linear-gradient(270deg, $rose-soft, rgb(208 88 117 / 0.05));
+  }
+  // Arrows that point 'forward' must point left.
+  .hero__btn svg {
+    transform: scaleX(-1);
+  }
+  .hero__btn:hover svg {
+    transform: scaleX(-1) translateX(5px);
+  }
+  .hero__dot i::after {
+    transform-origin: right;
+  }
+}

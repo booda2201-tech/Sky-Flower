@@ -1,0 +1,36 @@
+/*
+ * Tailwind CSS v4 entry (plain CSS on purpose - Tailwind v4 is processed by
+ * PostCSS via .postcssrc.json, and Sass would try to resolve `@import "tailwindcss"` itself).
+ *
+ * Cascade-layer order: Bootstrap lives in its own layer *below* `utilities`,
+ * so a Tailwind utility (e.g. `px-4`) always beats a Bootstrap rule - no !important wars.
+ */
+@layer theme, base, bootstrap, components, utilities;
+
+@import 'tailwindcss';
+
+@theme {
+  /*
+   * Rosé & cream palette - sampled from the two reference stores
+   * (wardstore.online: cream #f7f5ee, wine #6e1f3b, rose #d05875;
+   *  roselleflowers.store: cream #fbf6f0, plum #3b2129, rose #b5425b, line #f6d9df).
+   * No gold: rose and wine carry every accent.
+   */
+  --color-cream: #fbf6f0;
+  --color-cream-2: #f7efe6;
+  --color-plum: #3b2129;
+  --color-wine: #6e1f3b;
+  --color-line: #f6d9df;
+  --color-blush-50: #fff5f8;
+  --color-blush-100: #fce4ec;
+  --color-blush-200: #f6d9df;
+  --color-blush-300: #efb4c4;
+  --color-blush-400: #e07d9a;
+  --color-blush-500: #d05875;
+  --color-blush-600: #b5425b;
+  --color-blush-700: #8a2a4a;
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-sans: 'Jost', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+}

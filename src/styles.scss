@@ -1,0 +1,191 @@
+/* ==========================================================================
+   Sky Flower - global styles (SCSS)
+   Load order (see angular.json "styles"):
+     1. src/tailwind.css            -> Tailwind v4 (theme/base/components/utilities)
+     2. node_modules/aos/dist/aos.css
+     3. src/styles.scss             -> this file: Bootstrap (grid + forms only), Lenis, luxury theme
+   ========================================================================== */
+
+@use 'sass:map';
+
+/* --------------------------------------------------------------------------
+   Bootstrap - ONLY grid + form controls + responsive utilities.
+   Wrapped in the `bootstrap` cascade layer (declared in tailwind.css) so it
+   never overrides Tailwind. Reboot is intentionally skipped: Tailwind's
+   preflight already normalises the document.
+   -------------------------------------------------------------------------- */
+$enable-cssgrid: false;
+$enable-shadows: false;
+$enable-gradients: false;
+$enable-dark-mode: false;
+$grid-gutter-width: 1.5rem;
+
+@layer bootstrap {
+  @import 'bootstrap/scss/functions';
+  @import 'bootstrap/scss/variables';
+  @import 'bootstrap/scss/variables-dark';
+  @import 'bootstrap/scss/maps';
+  @import 'bootstrap/scss/mixins';
+  @import 'bootstrap/scss/root';
+  @import 'bootstrap/scss/containers';
+  @import 'bootstrap/scss/grid';
+  @import 'bootstrap/scss/forms';
+}
+
+/* --------------------------------------------------------------------------
+   Design tokens (mirrors the Tailwind @theme, exposed as CSS variables for SCSS)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Rosé & cream - sampled from wardstore.online and roselleflowers.store */
+  --sf-cream: #fbf6f0;
+  --sf-cream-2: #f7efe6;
+  --sf-ink: #3b2129; /* plum: body text */
+  --sf-wine: #6e1f3b; /* headings, deep accents */
+  --sf-blush: #f6d9df; /* hairlines, soft fills */
+  --sf-pink: #fce4ec;
+  --sf-rose: #b5425b; /* primary */
+  --sf-rose-soft: #d05875;
+  --sf-rose-deep: #8a2a4a;
+  --sf-champagne: #fbd5df;
+  --sf-gold: #d05875;
+  --sf-glass-bg: rgb(255 255 255 / 0.66);
+  --sf-glass-border: rgb(181 66 91 / 0.16);
+  --sf-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+html {
+  background: var(--sf-cream);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--sf-cream);
+  color: var(--sf-ink);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--sf-rose);
+  color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   Lenis (smooth scroll) - the official stylesheet rules, inlined because
+   @studio-freight/lenis@1.0.x does not ship a lenis.css.
+   -------------------------------------------------------------------------- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   Luxury helpers shared by every section
+   -------------------------------------------------------------------------- */
+.sf-glass {
+  background: var(--sf-glass-bg);
+  border: 1px solid var(--sf-glass-border);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.8) inset,
+    0 24px 60px -28px rgb(138 42 74 / 0.35);
+}
+
+.sf-gradient-text {
+  background: linear-gradient(100deg, var(--sf-rose-deep) 0%, var(--sf-rose) 40%, var(--sf-rose-soft) 70%, var(--sf-gold) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sf-shimmer 8s var(--sf-ease) infinite alternate;
+}
+
+@keyframes sf-shimmer {
+  to {
+    background-position: 100% 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Arabic (lang="ar" dir="rtl", set on <html> by I18nService)
+   - Arabic fonts for display + body
+   - NEVER letter-space Arabic: it breaks the joins between letters
+   - No italics (Arabic has none: the browser would just slant the glyphs)
+   - Taller line-height so diacritics and tall letters are not clipped by masks
+   -------------------------------------------------------------------------- */
+:root {
+  /* Arabic display: El Messiri has refined, high-contrast letterforms that sit well beside the
+     Latin serif; Tajawal is a clean, light-weight sans for body copy. */
+  --font-ar-display: 'El Messiri', 'Tajawal', serif;
+  --font-ar-sans: 'Tajawal', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+}
+
+html[lang='ar'] {
+  --font-display: var(--font-ar-display);
+  --font-sans: var(--font-ar-sans);
+}
+
+html[lang='ar'] *,
+html[lang='ar'] *::before,
+html[lang='ar'] *::after {
+  letter-spacing: normal !important;
+  font-style: normal !important;
+}
+
+html[lang='ar'] :is(h1, h2, h3, h4) {
+  line-height: 1.4 !important;
+}
+
+html[lang='ar'] :is(p, blockquote, li, small, dd) {
+  line-height: 1.7;
+}
+
+/* The English "accent" lines that sit under Arabic headings keep their elegant serif italic. */
+html[lang='ar'] [lang='en'] {
+  font-family: 'Cormorant Garamond', 'Times New Roman', serif !important;
+  font-style: italic !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Arabic text inside an English page (accent lines, the language switch). */
+button.nav__lang[lang='ar'] {
+  font-family: var(--font-ar-sans);
+  font-size: 0.9rem;
+}
+
+/* Accessibility: respect reduced motion globally (JS also checks this). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

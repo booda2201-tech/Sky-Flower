@@ -1,0 +1,69 @@
+﻿<header class="nav" [class.is-stuck]="stuck()" [class.is-open]="open()" [class.is-hidden]="hidden()">
+  <div class="nav__bar">
+    <a href="#top" class="nav__logo" (click)="go($event, '#top')" [attr.aria-label]="i18n.t('hero.homeAria')">
+      <svg viewBox="0 0 32 32" width="28" height="28" fill="none" aria-hidden="true">
+        <path d="M16 3c3 4 3 8 0 12-3-4-3-8 0-12Z" fill="#fb7185" opacity=".95" />
+        <path d="M29 16c-4 3-8 3-12 0 4-3 8-3 12 0Z" fill="#fda4af" opacity=".9" />
+        <path d="M16 29c-3-4-3-8 0-12 3 4 3 8 0 12Z" fill="#e11d48" opacity=".95" />
+        <path d="M3 16c4-3 8-3 12 0-4 3-8 3-12 0Z" fill="#be123c" opacity=".95" />
+        <circle cx="16" cy="16" r="2.4" fill="#fff1f4" />
+      </svg>
+      <span>Sky<em> Flower</em></span>
+    </a>
+
+    <nav class="nav__menu" [attr.aria-label]="i18n.t('hero.navAria')">
+      @for (l of links; track l.id) {
+        <a
+          class="nav__link"
+          [class.is-active]="active() === l.id"
+          [attr.aria-current]="active() === l.id ? 'true' : null"
+          [href]="'#' + l.id"
+          (click)="go($event, '#' + l.id)"
+          >{{ i18n.t(l.key) }}</a
+        >
+      }
+    </nav>
+
+    <div class="nav__tools">
+      <!-- Language switch: shows the language you would switch TO, in that language's own script. -->
+      <button
+        type="button"
+        class="nav__lang nav__pill"
+        data-lang-toggle
+        (click)="i18n.toggle()"
+        [attr.aria-label]="i18n.t('lang.switchAria')"
+        [attr.lang]="i18n.other()"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c2.6 2.8 3.9 5.8 3.9 9S14.6 18.2 12 21c-2.6-2.8-3.9-5.8-3.9-9S9.4 5.8 12 3z" />
+        </svg>
+        <span>{{ i18n.t('lang.switch') }}</span>
+      </button>
+
+      <button type="button" class="nav__bag nav__pill" data-bag appMagnetic="0.3" (click)="openBag()" [attr.aria-label]="i18n.t('bag.open')">
+        <span>{{ i18n.t('bag.label') }}</span>
+        <b>{{ store.cartCount() }}</b>
+      </button>
+
+      <button
+        type="button"
+        class="nav__burger nav__pill"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="open()"
+        aria-controls="nav-sheet"
+        [attr.aria-label]="i18n.t(open() ? 'nav.close' : 'nav.menu')"
+      >
+        <i aria-hidden="true"></i><i aria-hidden="true"></i>
+      </button>
+    </div>
+    <span class="nav__progress" aria-hidden="true" [style.transform]="'scaleX(' + progress() + ')'"></span>
+  </div>
+
+  @if (open()) {
+    <nav class="nav__sheet" id="nav-sheet" [attr.aria-label]="i18n.t('hero.navAria')">
+      @for (l of links; track l.id) {
+        <a class="nav__sheet-link" [class.is-active]="active() === l.id" [href]="'#' + l.id" (click)="go($event, '#' + l.id)">{{ i18n.t(l.key) }}</a>
+      }
+    </nav>
+  }
+</header>

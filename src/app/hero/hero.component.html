@@ -1,0 +1,173 @@
+<!-- The wrapper is taller than the screen: the hero stays pinned while the camera dives into the bouquet. -->
+<div #wrap class="hero-wrap">
+  <section #hero class="hero" id="top" [attr.aria-label]="i18n.t('hero.aria')">
+    <!-- Backdrop: soft rose + gold glows. The WebGL canvas sits above, copy above that. -->
+    <div class="hero__bg" aria-hidden="true">
+      <span class="hero__bg-glow hero__bg-glow--a"></span>
+      <span class="hero__bg-glow hero__bg-glow--b"></span>
+      <span class="hero__bg-glow hero__bg-glow--c"></span>
+    </div>
+
+    <!-- Solid page colour BEHIND the flowers: it takes over at the very end, so the hero hands off without a seam. -->
+    <div class="hero__page" aria-hidden="true"></div>
+
+    <div class="hero__canvas-wrap" [class.is-fallback]="webglFailed()" aria-hidden="true">
+      <canvas #canvas class="hero__canvas"></canvas>
+      @if (webglFailed()) {
+        <img class="hero__fallback" [src]="img(active().imageId, 760)" [attr.srcset]="srcset(active().imageId)"
+          sizes="(min-width: 1024px) 40vw, 80vw" alt="" decoding="async" />
+      }
+    </div>
+    <div class="hero__vignette" aria-hidden="true"></div>
+    <div class="hero__grain" aria-hidden="true"></div>
+
+    <!-- ============================== COPY ============================== -->
+    <div class="hero__grid">
+      <div class="hero__copy">
+        <p class="hero__eyebrow" data-reveal="eyebrow">
+          <span class="hero__eyebrow-dash"></span>
+          {{ i18n.t('hero.eyebrow') }}
+        </p>
+
+        <!-- Re-created on a language change so the intro's SplitText never leaves stale DOM behind. -->
+        @for (l of [i18n.lang()]; track l) {
+          <h1 class="hero__title">
+            <span class="hero__line">{{ i18n.t('hero.title.a') }}</span>
+            <span class="hero__line">{{ i18n.t('hero.title.b') }} <em>{{ i18n.t('hero.title.em') }}</em></span>
+          </h1>
+        }
+
+        <p class="hero__ar" [attr.lang]="i18n.other()">{{ i18n.alt('hero.sub') }}</p>
+
+        <span class="hero__ornament" aria-hidden="true"></span>
+
+        @for (l of [i18n.lang()]; track l) {
+          <p class="hero__lead">{{ i18n.t('hero.lead') }}</p>
+        }
+
+        <div class="hero__ctas">
+          <a href="#collections" class="hero__btn hero__btn--primary" appMagnetic="0.35" data-reveal="cta"
+            (click)="scrollTo($event, '#collections')">
+            <span>{{ i18n.t('hero.cta.explore') }}</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+          <a href="#gifting" class="hero__btn hero__btn--ghost backdrop-blur-xl bg-white/70 border border-line"
+            appMagnetic="0.35" data-reveal="cta" (click)="scrollTo($event, '#gifting')">
+            <span>{{ i18n.t('hero.cta.gift') }}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== The dive: three captions take turns while the camera moves into the hero rose ===== -->
+    <div class="hero__details" aria-hidden="true">
+      @for (d of details; track d.n) {
+        <div class="hero__detail">
+          <span class="hero__detail-k"><b>0{{ d.n }}</b> {{ i18n.t(d.k) }}</span>
+          <h2>{{ i18n.t(d.t) }}</h2>
+          <p>{{ i18n.t(d.x) }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- ============================== BOTTOM BAR: stats + featured creation ============================== -->
+    <div class="hero__bar">
+      <dl class="hero__stats">
+        <div data-reveal="stat">
+          <dt>{{ i18n.t('hero.stat.followers') }}</dt>
+          <dd>
+            <span [attr.data-count]="followersMillions" data-decimals="1">{{ followersMillions }}</span>
+            <small>M</small>
+          </dd>
+        </div>
+        <div data-reveal="stat">
+          <dt>{{ i18n.t('hero.stat.creations') }}</dt>
+          <dd><span [attr.data-count]="stats.productCount">{{ stats.productCount }}</span></dd>
+        </div>
+        <div data-reveal="stat">
+          <dt>{{ i18n.t('hero.stat.from') }}</dt>
+          <dd>
+            <small>{{ i18n.t('common.currency') }}</small>
+            <span [attr.data-count]="stats.startingPrice">{{ formatNumber(stats.startingPrice) }}</span>
+          </dd>
+        </div>
+      </dl>
+
+      <!-- Featured creation: picking one re-dyes the bouquet above. -->
+      <article #pick class="hero__pick backdrop-blur-xl bg-white/70 border border-line" data-reveal="pick"
+        [style.--accent]="active().accent" aria-live="polite"
+        (pointerenter)="pauseAutoplay()" (pointerleave)="resumeAutoplay()" (focusin)="pauseAutoplay()" (focusout)="resumeAutoplay()">
+        @for (p of [active()]; track p.id) {
+          <img class="hero__pick-img" [src]="img(p.imageId, 160)" alt="" width="80" height="100" decoding="async" />
+          <div class="hero__pick-body">
+            <h2 class="hero__card-title">{{ i18n.pick(p.nameEn, p.nameAr) }}</h2>
+            <p class="hero__card-ar" [attr.lang]="i18n.other()">{{ i18n.pickAlt(p.nameEn, p.nameAr) }}</p>
+          </div>
+          <button type="button" class="hero__add" appMagnetic="0.25" (click)="addToBag(p)">
+            <span>{{ i18n.t('common.addToBag') }}</span>
+            <b>{{ formatEgp(p.price) }}</b>
+          </button>
+          <button type="button" class="hero__heart" [class.is-on]="store.isWished(p.id)"
+            [attr.aria-pressed]="store.isWished(p.id)" (click)="store.toggleWish(p.id)"
+            [attr.aria-label]="i18n.t(store.isWished(p.id) ? 'wish.remove' : 'wish.save', { name: i18n.pick(p.nameEn, p.nameAr) })">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </button>
+        }
+
+        <div class="hero__dots" role="tablist" [attr.aria-label]="i18n.t('hero.featured')">
+          @for (p of products; track p.id; let i = $index) {
+            <button type="button" role="tab" class="hero__dot" [class.is-active]="i === activeIndex()"
+              [attr.aria-selected]="i === activeIndex()" [attr.aria-label]="i18n.pick(p.nameEn, p.nameAr)" (click)="select(i)">
+              <i></i>
+            </button>
+          }
+        </div>
+      </article>
+    </div>
+
+    <!-- ============================== FOOTER BAR ============================== -->
+    <footer class="hero__foot">
+      <ul class="hero__socials" [attr.aria-label]="i18n.t('hero.social')">
+        @for (s of socials; track s.label) {
+          <li data-reveal="foot">
+            <a class="hero__link" [href]="s.href" target="_blank" rel="noopener noreferrer">{{ s.label }}</a>
+          </li>
+        }
+      </ul>
+
+      <a href="#collections" class="hero__cue" data-reveal="foot" (click)="scrollTo($event, '#collections')"
+        [attr.aria-label]="i18n.t('hero.scrollAria')">
+        <span>{{ i18n.t('hero.scroll') }}</span>
+        <span class="hero__cue-line" aria-hidden="true"><i></i></span>
+      </a>
+    </footer>
+  </section>
+</div>
+
+<!-- ============================== FLOATING ACTION BUTTONS ============================== -->
+<aside #fabs class="hero__fabs" [attr.aria-label]="i18n.t('hero.fabs')">
+  <button type="button" class="hero__fab backdrop-blur-xl" data-bag appMagnetic="0.4" (click)="openBag()"
+    [attr.aria-label]="i18n.t('bag.open')">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" />
+    </svg>
+    @if (store.cartCount() > 0) {
+      <b class="hero__fab-count">{{ store.cartCount() }}</b>
+    }
+    <span class="hero__fab-tip">{{ i18n.t('bag.yours') }}</span>
+  </button>
+
+  <a [href]="whatsapp()" target="_blank" rel="noopener noreferrer" class="hero__fab backdrop-blur-xl" appMagnetic="0.4"
+    [attr.aria-label]="i18n.t('com.whatsapp')">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2-5.4A8.4 8.4 0 1 1 21 11.5z" />
+    </svg>
+    <span class="hero__fab-tip">{{ i18n.t('com.whatsapp') }}</span>
+  </a>
+
+  <!-- The third slot belongs to SkyBot's launcher (see SkyBotComponent), pinned just below this column. -->
+</aside>

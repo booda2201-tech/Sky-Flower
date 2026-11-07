@@ -1,0 +1,125 @@
+@if (state$ | async; as s) {
+  <!-- One-time invitation bubble -->
+  @if (nudge() && !s.open) {
+    <button type="button" class="sb-nudge backdrop-blur-lg" (click)="toggle()">
+      <span class="sb-nudge__dot" aria-hidden="true"></span>
+      <span>
+        <b>{{ i18n.t('sb.nudge.t') }}</b>
+        <small>{{ i18n.t('sb.nudge.x') }}</small>
+      </span>
+    </button>
+  }
+
+  <!-- ================================ CHAT PANEL ================================ -->
+  <section
+    id="skybot-panel"
+    class="sb backdrop-blur-lg bg-cream/85 border border-line"
+    [class.is-open]="s.open"
+    role="dialog"
+    [attr.aria-label]="i18n.t('sb.aria')"
+    [attr.aria-hidden]="!s.open"
+    [attr.inert]="s.open ? null : ''"
+  >
+    <header class="sb__head">
+      <span class="sb__avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" opacity=".7" /></svg>
+      </span>
+      <div class="sb__id">
+        <h2>Sky<em>Bot</em></h2>
+        <p><i aria-hidden="true"></i> {{ i18n.t('sb.status') }}</p>
+      </div>
+      <button type="button" class="sb__icon" (click)="restart()" [attr.aria-label]="i18n.t('sb.restartAria')" [attr.title]="i18n.t('sb.restart')">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+      </button>
+      <button #closeBtn type="button" class="sb__icon" (click)="close()" [attr.aria-label]="i18n.t('sb.closeAria')">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </header>
+
+    <div #body class="sb__body" role="log" aria-live="polite" aria-relevant="additions" data-lenis-prevent>
+      @for (m of s.messages; track m.id) {
+        @if (m.kind === 'text') {
+          <div class="sb-msg" [class.sb-msg--user]="m.from === 'user'" [appMsgPop]="m.from">
+            <p class="sb-msg__bubble">
+              <span>{{ i18n.pick(m.text, m.textAr) }}</span>
+            </p>
+          </div>
+        } @else {
+          <div class="sb-recs" appMsgPop="cards">
+            @for (r of m.items; track r.product.id; let i = $index) {
+              <article class="rec" [style.--accent]="r.product.accent">
+                <span class="rec__glow" aria-hidden="true"></span>
+                <div class="rec__media">
+                  <img [src]="img(r.product.imageId)" [alt]="i18n.pick(r.product.nameEn, r.product.nameAr)" width="110" height="140" loading="lazy" />
+                  <span class="rec__rank" aria-hidden="true">{{ i + 1 }}</span>
+                </div>
+                <div class="rec__body">
+                  <span class="rec__match">{{ i18n.t('sb.match', { n: r.matchPct }) }}</span>
+                  <h3>{{ i18n.pick(r.product.nameEn, r.product.nameAr) }}</h3>
+                  <span class="rec__ar" [attr.lang]="i18n.other()">{{ i18n.pickAlt(r.product.nameEn, r.product.nameAr) }}</span>
+                  <ul class="rec__reasons">
+                    @for (reason of i18n.pick(r.reasons, r.reasonsAr); track reason) {
+                      <li>{{ reason }}</li>
+                    }
+                  </ul>
+                  <div class="rec__row">
+                    <b>{{ egp(r.product.price) }}</b>
+                    @if (isAdded(r.product.id)) {
+                      <button type="button" class="rec__add is-added" (click)="openBag()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                        {{ i18n.t('sb.added') }}
+                      </button>
+                    } @else {
+                      <button type="button" class="rec__add" appMagnetic="0.25" (click)="addToCart(r.product)" [attr.aria-label]="i18n.t('sb.addAria', { name: i18n.pick(r.product.nameEn, r.product.nameAr) })">
+                        {{ i18n.t('sb.add') }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      }
+
+      @if (s.typing) {
+        <div class="sb-msg" appMsgPop="bot" aria-hidden="true">
+          <p class="sb-msg__bubble sb-typing"><i></i><i></i><i></i></p>
+        </div>
+      }
+    </div>
+
+    <footer class="sb__foot">
+      @if (s.replies.length && !s.typing) {
+        @for (set of [s.step]; track set) {
+          <div class="sb-chips" appMsgPop="chips">
+            @for (r of s.replies; track r.id) {
+              <button type="button" class="sb-chip" (click)="choose(r)">
+                {{ i18n.pick(r.label, r.labelAr) }}
+              </button>
+            }
+          </div>
+        }
+      } @else {
+        <p class="sb__hint">{{ s.typing ? i18n.t('sb.typing') : i18n.t('sb.tap') }}</p>
+      }
+    </footer>
+  </section>
+
+  <!-- ================================ LAUNCHER ================================ -->
+  <button
+    type="button"
+    class="sb-launch"
+    [class.is-open]="s.open"
+    appMagnetic="0.4"
+    (click)="toggle()"
+    [attr.aria-expanded]="s.open"
+    aria-controls="skybot-panel"
+    [attr.aria-label]="s.open ? i18n.t('sb.closeAria') : i18n.t('sb.launchAria')"
+  >
+    <span class="sb-launch__ring" aria-hidden="true"></span>
+    <svg class="sb-launch__spark" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" opacity=".7" /></svg>
+    <svg class="sb-launch__x" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+    <span class="sb-launch__tip">{{ i18n.t('sb.launch') }}</span>
+  </button>
+}

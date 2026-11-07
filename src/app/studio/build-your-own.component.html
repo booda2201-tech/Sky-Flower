@@ -1,0 +1,314 @@
+<section id="studio" class="byo" aria-labelledby="byo-title">
+  <div class="byo__bg" aria-hidden="true"></div>
+
+  <div class="byo__wrap">
+    <!-- ============================== HEADER ============================== -->
+    <header class="byo__head">
+      <div>
+        <p class="byo__eyebrow" data-aos="fade-up"><span></span> {{ i18n.t('byo.eyebrow') }}</p>
+        <h2 id="byo-title" class="byo__title" data-aos="fade-up" data-aos-delay="80">
+          {{ i18n.t('byo.title.a') }} <em>{{ i18n.t('byo.title.em') }}</em> {{ i18n.t('byo.title.b') }}
+        </h2>
+        <p class="byo__ar" [attr.lang]="i18n.other()" data-aos="fade-up" data-aos-delay="140">{{ i18n.alt('byo.sub') }}</p>
+      </div>
+      <p class="byo__intro" data-aos="fade-up" data-aos-delay="200">{{ i18n.t('byo.intro') }}</p>
+    </header>
+
+    @if (vm$ | async; as vm) {
+      <div class="byo__grid">
+        <!-- ============================== LIVE PREVIEW ============================== -->
+        <div class="byo__stage-col" data-aos="fade-up">
+          <div class="byo__stage backdrop-blur-xl bg-white/70 border border-line">
+            <span class="byo__halo" aria-hidden="true"></span>
+
+            <div class="byo__bouquet">
+              <app-bouquet-preview
+                [stems]="vm.state.stems"
+                [paper]="vm.quote.paper"
+                [ribbon]="vm.quote.ribbon"
+              />
+            </div>
+
+            <!-- floating add-on badges -->
+            <ul class="byo__badges" [attr.aria-label]="i18n.t('byo.addonsAria')">
+              @for (a of vm.quote.addons; track a.id; let i = $index) {
+                <li class="byo__badge" [style.--i]="i" [title]="i18n.pick(a.nameEn, a.nameAr)">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path [attr.d]="iconPaths[a.icon]" />
+                  </svg>
+                  <span>{{ i18n.pick(a.nameEn, a.nameAr) }}</span>
+                </li>
+              }
+            </ul>
+
+            <div class="byo__meta">
+              <span><b>{{ vm.recipe.size }}</b> {{ i18n.t('byo.size.roses') }}</span>
+              <span class="byo__acts">
+                <button type="button" class="byo__clear" (click)="clearAll()">{{ i18n.t('byo.clear') }}</button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================== STEP PANEL ============================== -->
+        <div class="byo__panel" data-aos="fade-up" data-aos-delay="120">
+          <nav class="st" [attr.aria-label]="i18n.t('byo.stepsAria')">
+            <ol>
+              @for (s of vm.steps; track s.step.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="st__item"
+                    [class.is-active]="s.active"
+                    [class.is-done]="s.done"
+                    [disabled]="!s.reachable"
+                    [attr.aria-current]="s.active ? 'step' : null"
+                    (click)="go(s.step.id)"
+                  >
+                    <span class="st__n">
+                      @if (s.done) {
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                      } @else {
+                        {{ s.step.index + 1 }}
+                      }
+                    </span>
+                    <span class="st__t">
+                      <b>{{ i18n.pick(s.step.titleEn, s.step.titleAr) }}</b>
+                      <small [attr.lang]="i18n.other()">{{ i18n.pickAlt(s.step.titleEn, s.step.titleAr) }}</small>
+                    </span>
+                  </button>
+                </li>
+              }
+            </ol>
+            <i class="st__bar" aria-hidden="true"><em [style.width.%]="(vm.activeIndex / (stepList.length - 1)) * 100"></em></i>
+          </nav>
+
+          @switch (vm.state.step) {
+            <!-- ---------------------------------- 1 · FLOWERS ---------------------------------- -->
+            @case ('flowers') {
+              <div class="step" appRevealChildren=".reveal">
+                <p class="step__lead reveal">
+                  <b>{{ i18n.t('byo.step1') }}</b>
+                  {{ i18n.t('byo.lead1') }}
+                </p>
+
+                <!-- 1 · size -->
+                <h3 class="step__sub step__sub--tight reveal">{{ i18n.t('byo.size.title') }}</h3>
+                <div class="sizes reveal" role="radiogroup" [attr.aria-label]="i18n.t('byo.size.title')">
+                  @for (s of vm.sizes; track s.count) {
+                    <button type="button" class="sz" role="radio" [class.is-selected]="vm.recipe.size === s.count"
+                      [attr.aria-checked]="vm.recipe.size === s.count" (click)="pickSize(s.count)">
+                      <b>{{ s.count }}</b>
+                      <span>{{ i18n.t('byo.size.roses') }}</span>
+                      <strong>{{ i18n.pick(s.nameEn, s.nameAr) }}</strong>
+                      <small>{{ egp(s.price) }}</small>
+                    </button>
+                  }
+                </div>
+
+                <!-- 2 · colours -->
+                <h3 class="step__sub step__sub--tight reveal">{{ i18n.t('byo.color.title') }}</h3>
+                <div class="swatches reveal" role="radiogroup" [attr.aria-label]="i18n.t('byo.color.title')">
+                  @for (c of colors; track c.id) {
+                    <button type="button" class="sw" role="radio" [class.is-selected]="vm.recipe.mainId === c.id"
+                      [attr.aria-checked]="vm.recipe.mainId === c.id" [style.--c1]="c.primary" [style.--c2]="c.secondary"
+                      (click)="pickMain(c.id)">
+                      <i aria-hidden="true"></i>
+                      <span>{{ i18n.pick(c.nameEn, c.nameAr) }}</span>
+                    </button>
+                  }
+                </div>
+
+                <h3 class="step__sub step__sub--tight reveal">{{ i18n.t('byo.color.second') }}</h3>
+                <div class="swatches reveal" role="radiogroup" [attr.aria-label]="i18n.t('byo.color.second')">
+                  <button type="button" class="sw sw--none" role="radio" [class.is-selected]="vm.recipe.secondId === null"
+                    [attr.aria-checked]="vm.recipe.secondId === null" (click)="pickSecond(null)">
+                    <i aria-hidden="true"></i>
+                    <span>{{ i18n.t('byo.color.none') }}</span>
+                  </button>
+                  @for (c of colors; track c.id) {
+                    @if (c.id !== vm.recipe.mainId) {
+                      <button type="button" class="sw" role="radio" [class.is-selected]="vm.recipe.secondId === c.id"
+                        [attr.aria-checked]="vm.recipe.secondId === c.id" [style.--c1]="c.primary" [style.--c2]="c.secondary"
+                        (click)="pickSecond(c.id)">
+                        <i aria-hidden="true"></i>
+                        <span>{{ i18n.pick(c.nameEn, c.nameAr) }}</span>
+                      </button>
+                    }
+                  }
+                </div>
+
+                <!-- 3 · baby's breath -->
+                <button type="button" class="toggle reveal" role="switch" [class.is-on]="vm.recipe.filler"
+                  [attr.aria-checked]="vm.recipe.filler" (click)="setFiller(!vm.recipe.filler)">
+                  <span class="toggle__knob" aria-hidden="true"></span>
+                  <span class="toggle__text">
+                    <b>{{ i18n.t('byo.filler.t') }}</b>
+                    <small>{{ i18n.t('byo.filler.x') }}</small>
+                  </span>
+                </button>
+
+                <!-- quick start -->
+                <div class="presets-head reveal">
+                  <h3>{{ i18n.t('byo.presets.title') }}</h3>
+                  <p>{{ i18n.t('byo.presets.sub') }}</p>
+                </div>
+                <div class="presets reveal">
+                  @for (p of presets; track p.preset.id) {
+                    <button type="button" class="ps" (click)="usePreset(p.preset)">
+                      <span class="ps__dots" aria-hidden="true">
+                        @for (c of p.colors; track c) {
+                          <i [style.background]="c"></i>
+                        }
+                      </span>
+                      <b>{{ i18n.pick(p.preset.nameEn, p.preset.nameAr) }}</b>
+                      <small>{{ i18n.pick(p.preset.noteEn, p.preset.noteAr) }}</small>
+                      <span class="ps__meta">
+                        <span>{{ p.preset.size }} {{ i18n.t('byo.size.roses') }}</span>
+                        <em>{{ i18n.t('byo.presets.flowersFrom', { price: egp(p.price) }) }}</em>
+                      </span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- ---------------------------------- 2 · WRAPPING ---------------------------------- -->
+            @case ('wrapping') {
+              <div class="step" appRevealChildren=".reveal">
+                <p class="step__lead reveal">
+                  <b>{{ i18n.t('byo.step2') }}</b>
+                  {{ i18n.t('byo.lead2') }}
+                </p>
+
+                <h3 class="step__sub reveal">{{ i18n.t('byo.paper') }}</h3>
+                <div class="papers reveal" role="radiogroup" [attr.aria-label]="i18n.t('byo.paper')">
+                  @for (p of papers; track p.id) {
+                    <button
+                      type="button"
+                      class="pp"
+                      role="radio"
+                      [class.is-selected]="vm.state.paperId === p.id"
+                      [attr.aria-checked]="vm.state.paperId === p.id"
+                      [style.--from]="p.from"
+                      [style.--to]="p.to"
+                      (click)="pickPaper(p.id)"
+                    >
+                      <span class="pp__sheet" aria-hidden="true"></span>
+                      <span class="pp__name">{{ i18n.pick(p.nameEn, p.nameAr) }}</span>
+                      <span class="pp__ar" [attr.lang]="i18n.other()">{{ i18n.pickAlt(p.nameEn, p.nameAr) }}</span>
+                      <span class="pp__price">+ {{ egp(p.price) }}</span>
+                    </button>
+                  }
+                </div>
+
+                <h3 class="step__sub reveal">{{ i18n.t('byo.ribbon') }}</h3>
+                <div class="ribbons reveal" role="radiogroup" [attr.aria-label]="i18n.t('byo.ribbonAria')">
+                  @for (r of ribbons; track r.id) {
+                    <button
+                      type="button"
+                      class="rb"
+                      role="radio"
+                      [class.is-selected]="vm.state.ribbonId === r.id"
+                      [attr.aria-checked]="vm.state.ribbonId === r.id"
+                      [style.--rb]="r.color"
+                      (click)="pickRibbon(r.id)"
+                    >
+                      <span class="rb__dot" aria-hidden="true"></span>
+                      <span class="rb__name">{{ i18n.pick(r.nameEn, r.nameAr) }}</span>
+                      <span class="rb__price">+ {{ egp(r.price) }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- ---------------------------------- 3 · ADD-ONS ---------------------------------- -->
+            @case ('addons') {
+              <div class="step" appRevealChildren=".reveal">
+                <p class="step__lead reveal">
+                  <b>{{ i18n.t('byo.step3') }}</b>
+                  {{ i18n.t('byo.lead3') }}
+                </p>
+
+                <div class="addons reveal">
+                  @for (a of addons; track a.id) {
+                    <button type="button" class="ad" [class.is-selected]="has(vm, a)" [attr.aria-pressed]="has(vm, a)" (click)="toggleAddon(a.id)">
+                      <span class="ad__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path [attr.d]="iconPaths[a.icon]" />
+                        </svg>
+                      </span>
+                      <span class="ad__body">
+                        <b>{{ i18n.pick(a.nameEn, a.nameAr) }}</b>
+                        <span [attr.lang]="i18n.other()">{{ i18n.pickAlt(a.nameEn, a.nameAr) }}</span>
+                        <small>{{ i18n.pick(a.blurbEn, a.blurbAr) }}</small>
+                      </span>
+                      <span class="ad__price">+ {{ egp(a.price) }}</span>
+                      <span class="ad__check" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                      </span>
+                    </button>
+                  }
+                </div>
+
+                @if (vm.wantsCard) {
+                  <div class="note reveal">
+                    <label for="byo-message">{{ i18n.t('byo.cardLabel') }}</label>
+                    <textarea
+                      id="byo-message"
+                      rows="3"
+                      [attr.maxlength]="messageMax"
+                      [value]="vm.state.message"
+                      (input)="setMessage(inputValue($event))"
+                      [attr.placeholder]="i18n.t('byo.cardPlaceholder')"
+                      dir="auto"
+                    ></textarea>
+                    <div class="note__foot">
+                      <ul>
+                        @for (s of suggestions; track s.en) {
+                          <li><button type="button" (click)="setMessage(i18n.pick(s.en, s.ar))">{{ i18n.pick(s.en, s.ar) }}</button></li>
+                        }
+                      </ul>
+                      <small [class.is-near]="vm.state.message.length > messageMax - 20">{{ vm.state.message.length }} / {{ messageMax }}</small>
+                    </div>
+                  </div>
+                }
+
+                <!-- order: the shop gets everything in one WhatsApp message -->
+                <div class="order reveal">
+                  <h3>{{ i18n.t('byo.order.title') }}</h3>
+                  <a class="order__wa" [href]="vm.whatsapp" target="_blank" rel="noopener"
+                    (click)="onOrder($event, vm)" (pointerenter)="prepareImage(vm)" (focus)="prepareImage(vm)"
+                    [attr.aria-disabled]="vm.messageRequired" [class.is-disabled]="vm.messageRequired">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                      <path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2Zm5.78 14.1c-.25.7-1.45 1.34-2 1.4-.52.07-1.17.1-1.9-.12a17.3 17.3 0 0 1-1.72-.64c-3.02-1.3-5-4.34-5.15-4.54-.15-.2-1.23-1.64-1.23-3.13 0-1.5.78-2.22 1.06-2.52.28-.3.6-.38.8-.38h.58c.19 0 .43-.07.67.5.25.6.84 2.07.92 2.22.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.3.77 1.27 1.65 2.05 1.14 1 2.1 1.32 2.4 1.46.3.15.47.12.65-.07.17-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.27.1 1.74.82 2.04.97.3.15.5.22.57.35.08.12.08.72-.17 1.42Z" />
+                    </svg>
+                    {{ i18n.t('byo.order.wa') }}
+                  </a>
+                  @if (imageNote(); as note) {
+                    <p class="order__img" role="status">
+                      {{ i18n.t(note === 'copied' ? 'byo.order.copied' : 'byo.order.saved') }}
+                    </p>
+                  }
+                  <p>{{ i18n.t('byo.order.note') }} <span>{{ i18n.t('byo.order.or') }}</span></p>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- ============================== FLOATING PRICE CALCULATOR ============================== -->
+      <app-price-calculator
+        [quote]="vm.quote"
+        [hint]="vm.hint"
+        [primaryLabel]="vm.primaryLabel"
+        [canPrimary]="vm.canPrimary"
+        [canBack]="vm.activeIndex > 0"
+        (back)="back()"
+        (primary)="onPrimary(vm)"
+      />
+    }
+  </div>
+</section>

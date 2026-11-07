@@ -1,0 +1,326 @@
+:host {
+  display: block;
+}
+
+// The site begins INSIDE the hero's last screen: this section is pulled up behind the pinned hero
+// (which is a hole by then), so the portal opens onto it instead of it scrolling in from below.
+@media (prefers-reduced-motion: no-preference) {
+  :host {
+    position: relative;
+    z-index: 1;
+    margin-top: calc(-1 * max(100svh, 34rem));
+  }
+  // Same colour as the section, extended upward to fill the gap behind the hero.
+  :host::before {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * max(100svh, 34rem)) 0 auto 0;
+    height: max(100svh, 34rem);
+    background: #fff5f8;
+    pointer-events: none;
+  }
+  .oc {
+    // landing: eased from a slight zoom-in to rest while the portal opens
+    --k: calc(1 - var(--land, 1));
+  }
+  .oc__wrap {
+    transform-origin: 50% 0;
+    transform: scale(calc(1 + 0.14 * var(--k, 0)));
+    opacity: calc(1 - 0.65 * var(--k, 0));
+  }
+}
+
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$rose-soft: #d05875;
+$rose-ink: #8a2a4a;
+$rose: #b5425b;
+
+.oc {
+  position: relative;
+  padding: 5.5rem 0 4rem;
+  background: #fff5f8;
+  overflow: hidden;
+}
+
+.oc__wrap {
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+
+  @media (min-width: 768px) {
+    padding-inline: 3rem;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 4.5rem;
+  }
+}
+
+.oc__head {
+  display: grid;
+  justify-items: center;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.oc__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1.1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: $rose-ink;
+
+  span {
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $rose-soft);
+  }
+}
+
+.oc__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.6rem, 6vw, 4.8rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: #6e1f3b;
+
+  em {
+    font-style: italic;
+    font-weight: 400;
+    color: #d05875;
+  }
+}
+
+.oc__sub {
+  display: grid;
+  justify-items: center;
+  gap: 1.1rem;
+  margin: 1rem 0 0;
+  font-size: 1rem;
+  color: rgb(59 33 41 / 0.72);
+}
+
+// little ornament: line - diamond - line
+.oc__rule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  order: 2;
+
+  i {
+    width: 3.2rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $rose-soft);
+    &:last-child {
+      transform: scaleX(-1);
+    }
+  }
+  b {
+    width: 0.42rem;
+    height: 0.42rem;
+    rotate: 45deg;
+    background: $rose-soft;
+  }
+}
+
+// ---- grid: 5 columns on desktop, a snap carousel below -----------------------------------
+.oc__grid {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.6rem 0.2rem 1.4rem;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  > li {
+    flex: 0 0 min(64vw, 17rem);
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 1100px) {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1.2rem;
+    overflow: visible;
+    padding-inline: 0;
+
+    > li {
+      flex: none;
+    }
+  }
+}
+
+.oc-card {
+  --accent: #{$rose};
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4.15;
+  overflow: hidden;
+  border-radius: 1.9rem;
+  color: #fff;
+  background: #fce4ec;
+  box-shadow: 0 30px 60px -34px rgb(110 31 59 / 0.5);
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.9s $ease, box-shadow 0.6s $ease;
+  isolation: isolate;
+
+  &.is-tilting {
+    transition: transform 0.14s linear, box-shadow 0.6s $ease;
+  }
+  &:hover {
+    box-shadow: 0 40px 80px -30px rgb(110 31 59 / 0.6);
+  }
+  &:focus-visible {
+    outline: 2px solid $rose-soft;
+    outline-offset: 4px;
+  }
+}
+
+// 1px ring that follows the pointer
+.oc-card__glow {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s $ease;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), var(--accent), transparent 62%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  .is-tilting > & {
+    opacity: 1;
+  }
+}
+
+.oc-card__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.001);
+    transition: transform 1.6s $ease;
+  }
+}
+.oc-card:hover .oc-card__media img {
+  transform: scale(1.08);
+}
+
+// wine-tinted fade so the white title always reads, whatever the photo
+.oc-card__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgb(59 33 41 / 0.28) 0%, transparent 28%),
+    linear-gradient(0deg, rgb(59 21 33 / 0.86) 0%, rgb(59 21 33 / 0.4) 32%, transparent 62%);
+}
+
+.oc-card__no {
+  position: absolute;
+  top: 1.1rem;
+  inset-inline-start: 1.2rem;
+  z-index: 2;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  color: #f4b6c6;
+  text-shadow: 0 1px 10px rgb(59 21 33 / 0.55);
+}
+
+.oc-card__body {
+  position: absolute;
+  inset: auto 1.1rem 1.1rem;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.8rem;
+  transform: translateZ(36px);
+}
+
+.oc-card__text {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+
+  strong {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.35rem, 1.7vw, 1.65rem);
+    line-height: 1.1;
+    text-shadow: 0 2px 18px rgb(0 0 0 / 0.4);
+  }
+  small {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: rgb(255 255 255 / 0.82);
+  }
+}
+
+.oc-card__go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  background: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background-color 0.5s $ease, border-color 0.5s $ease, transform 0.6s $ease;
+
+  svg {
+    transition: transform 0.6s $ease;
+  }
+}
+.oc-card:hover .oc-card__go {
+  background: $rose;
+  border-color: $rose;
+  transform: scale(1.08);
+
+  svg {
+    transform: translateX(2px);
+  }
+}
+
+:host-context([dir='rtl']) {
+  .oc__eyebrow > span:first-child {
+    transform: scaleX(-1);
+  }
+  .oc-card__go svg {
+    transform: scaleX(-1);
+  }
+  .oc-card:hover .oc-card__go svg {
+    transform: scaleX(-1) translateX(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-card,
+  .oc-card__media img {
+    transition: none;
+  }
+}

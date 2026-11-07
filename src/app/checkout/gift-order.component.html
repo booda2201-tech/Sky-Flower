@@ -1,0 +1,239 @@
+﻿<div class="go">
+  <div class="go__form">
+    <!-- how: delivery or pick-up -->
+    <div class="go__mode" role="radiogroup" [attr.aria-label]="c('mode')">
+      <button type="button" role="radio" [attr.aria-checked]="isDelivery()" [class.is-on]="isDelivery()" (click)="mode.set('delivery')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 7h11v9H3z M14 10h4l3 3v3h-7z" /><circle cx="7" cy="17.5" r="1.6" /><circle cx="17" cy="17.5" r="1.6" />
+        </svg>
+        <span><b>{{ c('delivery') }}</b><small>{{ c('deliveryNote') }}</small></span>
+      </button>
+      <button type="button" role="radio" [attr.aria-checked]="!isDelivery()" [class.is-on]="!isDelivery()" (click)="mode.set('pickup')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 9l1.5-5h13L20 9 M4 9h16v11H4z M9.5 20v-6h5v6" />
+        </svg>
+        <span><b>{{ c('pickup') }}</b><small>{{ c('pickupNote') }}</small></span>
+      </button>
+    </div>
+
+    <!-- 01 - the moment -->
+    <section class="go__step">
+      <header>
+        <span class="go__no">01</span>
+        <div>
+          <h3>{{ c('s1') }}</h3>
+          <p>{{ c('s1x') }}</p>
+        </div>
+      </header>
+
+      <div class="go__chips" role="group" [attr.aria-label]="isDelivery() ? c('s1') : c('s1p')">
+        <button type="button" class="go__chip" [class.is-on]="date() === todayIso" [attr.aria-pressed]="date() === todayIso" (click)="setDate(todayIso)">{{ c('today') }}</button>
+        <button type="button" class="go__chip" [class.is-on]="date() === tomorrowIso" [attr.aria-pressed]="date() === tomorrowIso" (click)="setDate(tomorrowIso)">{{ c('tomorrow') }}</button>
+        <label class="go__chip go__chip--date" [class.is-on]="date() && date() !== todayIso && date() !== tomorrowIso">
+          <span>{{ c('date') }}</span>
+          <input type="date" [min]="todayIso" [value]="date()" (change)="setDate(text($event))" [attr.aria-invalid]="err('date') ? 'true' : null" />
+        </label>
+      </div>
+      @if (err('date'); as m) {
+        <p class="go__err" role="alert">{{ m }}</p>
+      }
+
+      <p class="go__label">{{ isDelivery() ? c('slot') : c('s1p') }}</p>
+      <div class="go__slots" role="radiogroup" [attr.aria-label]="c('slot')" [class.go__bad]="err('slot')">
+        @for (s of slots; track s.id) {
+          <button
+            type="button"
+            role="radio"
+            class="go__slot"
+            [class.is-on]="slot() === s.id"
+            [attr.aria-checked]="slot() === s.id"
+            [disabled]="slotDisabled(s.id) && !!date()"
+            (click)="slot.set(s.id)"
+          >{{ slotLabel(s.from, s.to) }}</button>
+        }
+      </div>
+      @if (slotsGone()) {
+        <p class="go__hint">{{ c('slotsGone') }}</p>
+      }
+      @if (err('slot'); as m) {
+        <p class="go__err" role="alert">{{ m }}</p>
+      }
+    </section>
+
+    <!-- 02 - the message -->
+    <section class="go__step">
+      <header>
+        <span class="go__no">02</span>
+        <div>
+          <h3>{{ c('s2') }}</h3>
+          <p>{{ c('s2x') }}</p>
+        </div>
+      </header>
+
+      <label class="go__field">
+        <span>{{ c('msg') }}</span>
+        <textarea rows="4" [maxLength]="messageMax" [placeholder]="c('msgPh')" [value]="message()" (input)="message.set(text($event))"></textarea>
+      </label>
+      <div class="go__meta">
+        <span>{{ c('msgPrice') }} · {{ egp(cardPrice) }}</span>
+        <span dir="ltr">{{ message().length }}/{{ messageMax }}</span>
+      </div>
+
+      @if (hasCard()) {
+        <div class="go__sign">
+          <label class="go__field">
+            <span>{{ c('signAs') }}</span>
+            <input type="text" [placeholder]="c('signPh')" [value]="signName()" [disabled]="anonymous()" (input)="signName.set(text($event))" autocomplete="off" />
+          </label>
+          <label class="go__check">
+            <input type="checkbox" [checked]="anonymous()" (change)="anonymous.set(!anonymous())" />
+            <i aria-hidden="true"></i>
+            <span>{{ c('anon') }}</span>
+          </label>
+        </div>
+      }
+    </section>
+
+    <!-- 03 - extras -->
+    <section class="go__step">
+      <header>
+        <span class="go__no">03</span>
+        <div>
+          <h3>{{ c('s3') }}</h3>
+          <p>{{ c('s3x') }}</p>
+        </div>
+      </header>
+
+      <div class="go__extras">
+        @for (e of extras; track e.id) {
+          <button type="button" class="go__extra" [class.is-on]="picked().has(e.id)" [attr.aria-pressed]="picked().has(e.id)" (click)="toggleExtra(e.id)">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path [attr.d]="iconPath[e.icon]" />
+            </svg>
+            <b>{{ i18n.pick(e.nameEn, e.nameAr) }}</b>
+            <small>{{ i18n.pick(e.blurbEn, e.blurbAr) }}</small>
+            <em>+ {{ egp(e.price) }}</em>
+            <i class="go__tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+            </i>
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- 04 - details -->
+    <section class="go__step">
+      <header>
+        <span class="go__no">04</span>
+        <div>
+          <h3>{{ isDelivery() ? c('s4') : c('s4p') }}</h3>
+          <p>{{ isDelivery() ? c('s4x') : c('s4px') }}</p>
+        </div>
+      </header>
+
+      <div class="go__grid">
+        <label class="go__field">
+          <span>{{ c('yourName') }}</span>
+          <input type="text" autocomplete="name" [value]="senderName()" (input)="senderName.set(text($event))" [attr.aria-invalid]="err('senderName') ? 'true' : null" />
+          @if (err('senderName'); as m) { <small class="go__err" role="alert">{{ m }}</small> }
+        </label>
+        <label class="go__field">
+          <span>{{ c('yourPhone') }}</span>
+          <input type="tel" inputmode="tel" dir="ltr" autocomplete="tel" [value]="senderPhone()" (input)="senderPhone.set(text($event))" [attr.aria-invalid]="err('senderPhone') ? 'true' : null" />
+          @if (err('senderPhone'); as m) { <small class="go__err" role="alert">{{ m }}</small> }
+        </label>
+
+        @if (isDelivery()) {
+          <label class="go__field">
+            <span>{{ c('toName') }}</span>
+            <input type="text" [value]="recipientName()" (input)="recipientName.set(text($event))" [attr.aria-invalid]="err('recipientName') ? 'true' : null" />
+            @if (err('recipientName'); as m) { <small class="go__err" role="alert">{{ m }}</small> }
+          </label>
+          <label class="go__field">
+            <span>{{ c('toPhone') }}</span>
+            <input type="tel" inputmode="tel" dir="ltr" [value]="recipientPhone()" (input)="recipientPhone.set(text($event))" />
+          </label>
+          <label class="go__field go__field--wide">
+            <span>{{ c('address') }}</span>
+            <textarea rows="3" autocomplete="street-address" [value]="address()" (input)="address.set(text($event))" [attr.aria-invalid]="err('address') ? 'true' : null"></textarea>
+            @if (err('address'); as m) { <small class="go__err" role="alert">{{ m }}</small> }
+          </label>
+        }
+        <label class="go__field go__field--wide">
+          <span>{{ c('notes') }}</span>
+          <input type="text" [value]="notes()" (input)="notes.set(text($event))" />
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <!-- order summary + send -->
+  <aside class="go__summary" [attr.aria-label]="c('summary')">
+    <h3>{{ c('summary') }}</h3>
+
+    @if (store.cartLines().length) {
+      <ul class="go__lines">
+        @for (l of store.cartLines(); track l.productId) {
+          <li>
+            @if (l.imageId) {
+              <img [src]="thumb(l.imageId)" alt="" width="48" height="60" />
+            }
+            <span>
+              <b>{{ i18n.pick(l.name, l.nameAr) }}</b>
+              <small>× {{ l.qty }}</small>
+            </span>
+            <em>{{ egp(l.unitPrice * l.qty) }}</em>
+          </li>
+        }
+      </ul>
+
+      @if (extraLines().length || hasCard()) {
+        <ul class="go__lines go__lines--extras">
+          @for (e of extraLines(); track e.id) {
+            <li>
+              <span><b>{{ i18n.pick(e.nameEn, e.nameAr) }}</b></span>
+              <em>{{ egp(e.price) }}</em>
+            </li>
+          }
+          @if (hasCard()) {
+            <li>
+              <span><b>{{ c('msgPrice') }}</b></span>
+              <em>{{ egp(cardPrice) }}</em>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="go__total">
+        <span>{{ c('total') }}</span>
+        <b>{{ egp(total()) }}</b>
+      </div>
+      <p class="go__note">{{ isDelivery() ? c('totalNote') : c('totalNotePickup') }}</p>
+
+      @if (attempted() && errors().size) {
+        <p class="go__err go__err--box" role="alert">{{ c('fix') }}</p>
+      }
+
+      @if (sent()) {
+        <div class="go__sent" role="status">
+          <b>{{ c('sentT') }}</b>
+          <span>{{ c('sentX') }}</span>
+          <button type="button" (click)="send()">{{ c('send') }}</button>
+          <button type="button" class="go__link" (click)="editAgain()">{{ c('edit') }}</button>
+        </div>
+      } @else {
+        <button type="button" class="go__send" (click)="send()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2Zm5.78 14.1c-.25.7-1.45 1.34-2 1.4-.52.07-1.17.1-1.9-.12a17.3 17.3 0 0 1-1.72-.64c-3.02-1.3-5-4.34-5.15-4.54-.15-.2-1.23-1.64-1.23-3.13 0-1.5.78-2.22 1.06-2.52.28-.3.6-.38.8-.38h.58c.19 0 .43-.07.67.5.25.6.84 2.07.92 2.22.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.3.77 1.27 1.65 2.05 1.14 1 2.1 1.32 2.4 1.46.3.15.47.12.65-.07.17-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.27.1 1.74.82 2.04.97.3.15.5.22.57.35.08.12.08.72-.17 1.42Z" />
+          </svg>
+          {{ c('send') }}
+        </button>
+      }
+    } @else {
+      <div class="go__empty">
+        <p>{{ c('empty') }}</p>
+        <button type="button" (click)="browse()">{{ c('browse') }}</button>
+      </div>
+    }
+  </aside>
+</div>

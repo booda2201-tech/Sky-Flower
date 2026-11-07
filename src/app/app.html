@@ -1,0 +1,28 @@
+﻿@if (!isAdmin()) {
+  <app-site-nav />
+}
+<router-outlet />
+
+@if (!isAdmin()) {
+  <!-- ============================== FOOTER ============================== -->
+  <footer class="foot">
+    <p class="foot__brand">Sky<em> Flower</em></p>
+    <ul>
+      @for (s of socials; track s.label) {
+        <li><a [href]="s.href" target="_blank" rel="noopener noreferrer">{{ s.label }}</a></li>
+      }
+    </ul>
+    <p class="foot__info">
+      {{ i18n.pick(brand.addressEn, brand.addressAr) }} &middot; {{ i18n.pick(brand.hoursEn, brand.hoursAr) }} &middot;
+      <a [href]="'tel:' + brand.phone" dir="ltr">{{ brand.phone }}</a> &middot;
+      <a [href]="whatsapp()" target="_blank" rel="noopener noreferrer">{{ i18n.t('com.whatsapp') }}</a>
+    </p>
+    <small>{{ i18n.t('foot.copy', { year }) }} &middot; <a routerLink="/admin" class="foot__admin">{{ i18n.pick('Admin', 'الإدارة') }}</a></small>
+  </footer>
+
+  @if (isHome()) {
+    <app-mobile-tabs />
+  }
+  <app-cart-panel />
+  <app-skybot />
+}

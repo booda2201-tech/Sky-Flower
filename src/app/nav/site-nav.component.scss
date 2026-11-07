@@ -1,0 +1,395 @@
+:host {
+  display: contents;
+}
+
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$rose: #b5425b;
+$rose-soft: #d05875;
+$rose-ink: #8a2a4a;
+$ink: #3b2129;
+
+// A floating glass "island" instead of a full-width bar: it sits over the page rather than
+// cutting the hero in two, melts into the background at the top and firms up once you scroll.
+.nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.85rem 0.85rem 0;
+  pointer-events: none; // only the island itself takes clicks
+  transition: transform 0.7s $ease, opacity 0.5s $ease;
+  animation: nav-in 1.1s $ease 0.25s both;
+
+  @media (min-width: 768px) {
+    padding-top: 1.3rem;
+  }
+
+  // slides away while you read downwards, returns as soon as you scroll back up
+  &.is-hidden:not(.is-open) {
+    transform: translateY(-150%);
+    opacity: 0;
+  }
+}
+
+@keyframes nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.97);
+  }
+}
+
+// scroll-progress hairline hugging the bottom curve of the bar
+.nav__progress {
+  position: absolute;
+  inset-inline: 1.6rem;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f4b6c6, #d05875 60%, #8a2a4a);
+  transform-origin: left center;
+  pointer-events: none;
+  will-change: transform;
+
+  :host-context([dir='rtl']) & {
+    transform-origin: right center;
+    background: linear-gradient(270deg, #f4b6c6, #d05875 60%, #8a2a4a);
+  }
+}
+
+.nav__bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  max-width: 62rem;
+  padding: 0.42rem 0.5rem 0.42rem 1.3rem;
+  border-radius: 999px;
+  pointer-events: auto;
+  background: rgb(255 251 251 / 0.5);
+  border: 1px solid rgb(255 255 255 / 0.75);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  box-shadow:
+    0 18px 40px -26px rgb(110 31 59 / 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+  transition: background-color 0.5s $ease, box-shadow 0.5s $ease, max-width 0.7s $ease;
+
+  .is-stuck & {
+    max-width: 56rem;
+    background: rgb(255 250 250 / 0.84);
+    box-shadow:
+      0 22px 50px -24px rgb(110 31 59 / 0.42),
+      inset 0 1px 0 rgb(255 255 255 / 0.95);
+  }
+
+  :host-context([dir='rtl']) & {
+    padding: 0.42rem 1.3rem 0.42rem 0.5rem;
+  }
+
+  @media (max-width: 479px) {
+    gap: 0.5rem;
+    padding: 0.35rem 0.4rem 0.35rem 1rem;
+
+    :host-context([dir='rtl']) & {
+      padding: 0.35rem 1rem 0.35rem 0.4rem;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------- logo
+.nav__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+  white-space: nowrap;
+  font-family: 'Cormorant Garamond', 'Times New Roman', serif; // the brand name is always Latin
+  font-size: 1.45rem;
+  line-height: 1;
+  color: $ink;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    transition: transform 1.2s $ease;
+  }
+  em {
+    color: $rose-soft;
+    font-style: italic;
+  }
+  &:hover svg {
+    transform: rotate(90deg);
+  }
+  &:focus-visible {
+    outline: 2px solid $rose-soft;
+    outline-offset: 4px;
+    border-radius: 999px;
+  }
+
+  @media (max-width: 479px) {
+    gap: 0.35rem;
+    font-size: 1.25rem;
+    svg {
+      width: 21px;
+      height: 21px;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------- links
+.nav__menu {
+  display: none;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(59 33 41 / 0.85);
+
+  @media (min-width: 768px) {
+    display: flex;
+  }
+}
+
+.nav__link {
+  position: relative;
+  display: inline-block;
+  padding: 0.62rem 0.95rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: color 0.35s $ease, background-color 0.35s $ease;
+
+  &:hover {
+    color: $rose-ink;
+    background: rgb(252 228 236 / 0.6);
+  }
+  &.is-active {
+    color: #fff;
+    background: linear-gradient(135deg, $rose-soft, $rose-ink);
+    box-shadow: 0 10px 22px -12px rgb(138 42 74 / 0.8);
+  }
+  &:focus-visible {
+    outline: 2px solid $rose-soft;
+    outline-offset: 2px;
+  }
+}
+
+// ---------------------------------------------------------------------------- tools
+.nav__tools {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0.25rem;
+}
+
+.nav__pill {
+  display: inline-flex;
+  align-items: center;
+  height: 2.6rem;
+  border-radius: 999px;
+  color: $ink;
+  transition: color 0.35s $ease, background-color 0.35s $ease, box-shadow 0.35s $ease;
+
+  &:focus-visible {
+    outline: 2px solid $rose-soft;
+    outline-offset: 2px;
+  }
+  @media (max-width: 479px) {
+    height: 2.4rem;
+  }
+}
+
+// language: plain text with a globe, no box
+.nav__lang {
+  gap: 0.45rem;
+  padding: 0 0.9rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+
+  svg {
+    color: $rose-ink;
+    transition: transform 0.9s $ease;
+  }
+  &:hover {
+    background: rgb(252 228 236 / 0.6);
+    svg {
+      transform: rotate(180deg);
+    }
+  }
+  @media (max-width: 479px) {
+    padding: 0 0.6rem;
+    svg {
+      display: none;
+    }
+  }
+}
+
+// the bag is the one solid element: it is the call to action
+.nav__bag {
+  gap: 0.6rem;
+  padding-inline: 1.15rem 0.45rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, $rose-soft, $rose-ink);
+  box-shadow: 0 12px 24px -14px rgb(138 42 74 / 0.9);
+
+  &:hover {
+    box-shadow: 0 16px 30px -12px rgb(138 42 74 / 0.95);
+  }
+  b {
+    display: grid;
+    place-items: center;
+    min-width: 1.65rem;
+    height: 1.65rem;
+    padding-inline: 0.3rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: $rose-ink;
+    background: #fff;
+  }
+  @media (max-width: 479px) {
+    gap: 0.4rem;
+    padding-inline: 0.85rem 0.35rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    b {
+      min-width: 1.45rem;
+      height: 1.45rem;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------- burger + sheet (< 768px)
+.nav__burger {
+  position: relative;
+  justify-content: center;
+  width: 2.6rem;
+  padding: 0;
+  margin-inline-start: 0.15rem;
+  background: rgb(252 228 236 / 0.7);
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+  @media (max-width: 479px) {
+    width: 2.4rem;
+  }
+
+  i {
+    position: absolute;
+    left: 50%;
+    width: 1rem;
+    height: 1.5px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.45s $ease;
+  }
+  i:first-child {
+    transform: translate(-50%, -3px);
+  }
+  i:last-child {
+    transform: translate(-50%, 3px);
+  }
+  .is-open & i:first-child {
+    transform: translate(-50%, 0) rotate(45deg);
+  }
+  .is-open & i:last-child {
+    transform: translate(-50%, 0) rotate(-45deg);
+  }
+}
+
+.nav__sheet {
+  display: grid;
+  gap: 0.15rem;
+  width: 100%;
+  max-width: 62rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 1.8rem;
+  pointer-events: auto;
+  background: rgb(255 250 250 / 0.9);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  box-shadow: 0 30px 60px -30px rgb(110 31 59 / 0.45);
+  animation: sheet-in 0.5s $ease both;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+}
+
+.nav__sheet-link {
+  display: flex;
+  align-items: center;
+  padding: 0.95rem 1.2rem;
+  border-radius: 1.3rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(59 33 41 / 0.88);
+  transition: background-color 0.3s, color 0.3s;
+
+  &:hover {
+    color: $rose-ink;
+    background: rgb(252 228 236 / 0.7);
+  }
+  &.is-active {
+    color: #fff;
+    background: linear-gradient(135deg, $rose-soft, $rose-ink);
+  }
+}
+
+// ---------------------------------------------------------------------------- Arabic
+// Arabic has no capitals and must never be letter-spaced; it also reads smaller at the same
+// size, so every label goes up a notch and gets a touch more weight.
+:host-context(html[lang='ar']) {
+  .nav__menu {
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+  .nav__link {
+    padding-block: 0.5rem;
+  }
+  .nav__lang {
+    font-size: 0.95rem;
+    letter-spacing: normal;
+  }
+  .nav__bag {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+  .nav__sheet-link {
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .nav__sheet {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,322 @@
+$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$rose-soft: #d05875;
+$rose-ink: #8a2a4a;
+$rose: #b5425b;
+$ink: #3b2129;
+
+// Sticks to the bottom of the viewport while the studio is on screen.
+:host {
+  position: sticky;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: block;
+  margin-top: 2.5rem;
+  pointer-events: none; // only the card itself is interactive
+
+  // phones: ride above the floating tab bar instead of under it
+  @media (max-width: 639px) {
+    bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 4.6rem);
+  }
+}
+
+.pc {
+  position: relative;
+  width: 100%;
+  max-width: 56rem;
+  margin-inline: 0 auto;
+  pointer-events: auto;
+
+  @media (min-width: 640px) {
+    width: calc(100% - 4.1rem); // leaves room for the floating action buttons
+  }
+  @media (min-width: 1100px) {
+    width: 100%;
+    margin-inline: auto;
+  }
+}
+
+// ---------------------------------------------------------------------------- bar
+.pc__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.55rem 0.55rem 0.6rem;
+  border-radius: 1.6rem;
+  color: $ink;
+  background: linear-gradient(180deg, rgb(255 252 249 / 0.78), rgb(255 252 249 / 0.88));
+  border: 1px solid rgb(181 66 91 / 0.18);
+  box-shadow:
+    0 30px 70px -24px rgb(110 31 59 / 0.36),
+    0 0 0 1px rgb(208 88 117 / 0.06),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  animation: pc-float 6s ease-in-out infinite;
+
+  @media (min-width: 640px) {
+    gap: 1.1rem;
+    padding: 0.7rem 0.7rem 0.7rem 0.9rem;
+    border-radius: 999px;
+  }
+}
+
+.pc__back {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 1px solid rgb(181 66 91 / 0.21);
+  transition: all 0.4s $ease;
+
+  &:hover:not(:disabled) {
+    border-color: $rose-ink;
+    color: $rose-ink;
+    transform: translateX(-2px);
+  }
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.pc__total {
+  display: grid;
+  flex: none; // never let the primary button squeeze (and clip) the price
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 0.4rem;
+  text-align: start;
+  padding: 0.1rem 0.3rem;
+  border-radius: 1rem;
+
+  @media (min-width: 640px) {
+    padding-inline: 0.5rem;
+  }
+
+  small {
+    grid-column: 1 / -1;
+    font-size: 0.58rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: $rose-ink;
+  }
+  b {
+    display: inline-block;
+    min-width: 6.4ch;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.3rem;
+    line-height: 1.05;
+    white-space: nowrap;
+
+    @media (min-width: 640px) {
+      font-size: 1.7rem;
+    }
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(120deg, #6e1f3b, #b5425b 70%, $rose-ink);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.pc__chev {
+  display: none; // the total is still tappable; the icon only appears when there is room
+  color: rgb(59 33 41 / 0.65);
+  transition: transform 0.5s $ease;
+
+  @media (min-width: 640px) {
+    display: block;
+  }
+  .is-open & {
+    transform: rotate(180deg);
+  }
+}
+
+.pc__hint {
+  display: none;
+  flex: 1;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgb(59 33 41 / 0.7);
+  transition: color 0.4s;
+
+  &.is-ready {
+    color: #2f8f6b;
+  }
+  @media (min-width: 640px) {
+    display: block;
+  }
+}
+
+.pc__primary {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 3rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0.8rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(120deg, $rose, #b5425b 45%, #8a2a4a);
+  box-shadow: 0 18px 44px -16px rgb(181 66 91 / 0.85);
+  transition:
+    box-shadow 0.5s $ease,
+    transform 0.5s $ease,
+    opacity 0.4s,
+    filter 0.4s;
+
+  @media (min-width: 640px) {
+    flex: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    padding-inline: 2.2rem;
+  }
+  &:hover:not(:disabled) {
+    box-shadow: 0 24px 56px -12px rgb(181 66 91 / 1);
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    filter: saturate(0.4);
+    box-shadow: none;
+  }
+}
+
+// ---------------------------------------------------------------------------- breakdown
+.pc__panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.8rem);
+  left: 0;
+  padding: 1.3rem 1.4rem 1.2rem;
+  border-radius: 1.6rem;
+  color: $ink;
+  background: linear-gradient(180deg, rgb(255 252 249 / 0.9), rgb(255 252 249 / 0.94));
+  border: 1px solid rgb(181 66 91 / 0.15);
+  box-shadow: 0 40px 80px -30px rgb(110 31 59 / 0.36);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.98);
+  transform-origin: 50% 100%;
+  transition:
+    opacity 0.45s $ease,
+    transform 0.6s $ease,
+    visibility 0.6s;
+
+  .is-open & {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  @media (min-width: 640px) {
+    left: auto;
+    width: min(26rem, 100%);
+  }
+}
+
+.pc__panel-title {
+  margin: 0 0 0.9rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: $rose-ink;
+}
+
+.pc__lines {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.55rem;
+    font-size: 0.86rem;
+    border-bottom: 1px dashed rgb(181 66 91 / 0.15);
+    color: rgb(59 33 41 / 0.88);
+  }
+  b {
+    display: inline-block;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: $ink;
+  }
+  .is-saving b {
+    color: #2f8f6b;
+  }
+}
+
+.pc__empty {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.2rem;
+  color: rgb(59 33 41 / 0.7);
+}
+
+.pc__nudge {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgb(59 33 41 / 0.8);
+
+  b {
+    color: $rose-ink;
+  }
+  i {
+    display: block;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgb(181 66 91 / 0.1);
+  }
+  em {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, $rose, $rose-soft);
+    transition: width 0.7s $ease;
+  }
+  &--ok {
+    color: #2f8f6b;
+  }
+}
+
+@keyframes pc-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc__bar {
+    animation: none;
+  }
+}
+
+// Arabic (dir=rtl): the 'previous' chevron must point the other way.
+:host-context([dir='rtl']) {
+  .pc__back svg {
+    transform: scaleX(-1);
+  }
+  .pc__back:hover:not(:disabled) {
+    transform: translateX(2px);
+  }
+}

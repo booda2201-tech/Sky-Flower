@@ -1,0 +1,64 @@
+<!-- ====================================================================================
+     MOMENTS - the shop's real reels (YouTube embeds)
+     ==================================================================================== -->
+<section id="moments" class="mo" aria-labelledby="mo-title">
+  <div class="mo__wrap">
+    <header class="mo__head">
+      <div>
+        <p class="mo__eyebrow" data-aos="fade-up"><span></span> {{ i18n.t('mo.eyebrow') }}</p>
+        <h2 id="mo-title" class="mo__title" data-aos="fade-up" data-aos-delay="80">
+          {{ i18n.t('mo.title.a') }} <em>{{ i18n.t('mo.title.em') }}</em>
+        </h2>
+        <p class="mo__sub" data-aos="fade-up" data-aos-delay="140">{{ i18n.t('mo.sub') }}</p>
+      </div>
+
+      <div class="mo__nav" data-aos="fade-up" data-aos-delay="160">
+        <button type="button" class="mo__arrow" [attr.aria-label]="i18n.t('mo.prev')" (click)="scrollBy(-1)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
+        <button type="button" class="mo__arrow" [attr.aria-label]="i18n.t('mo.next')" (click)="scrollBy(1)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+    </header>
+  </div>
+
+  <ul #track class="mo__track" role="list" [attr.aria-label]="i18n.t('mo.aria')" tabindex="0">
+    @for (r of reels; track r.id) {
+      <li class="mo-card">
+        <button type="button" class="mo-card__btn" (click)="open(r, $event)"
+          [attr.aria-label]="i18n.t('mo.play', { views: r.views })">
+          <img [src]="thumb(r)" alt="" loading="lazy" decoding="async" width="720" height="1280"
+            referrerpolicy="no-referrer" />
+          <span class="mo-card__shade" aria-hidden="true"></span>
+          <span class="mo-card__views" dir="ltr">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+            {{ r.views }}
+          </span>
+          <span class="mo-card__play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+          </span>
+        </button>
+      </li>
+    }
+  </ul>
+
+  @if (playing(); as reel) {
+    <div class="mo-modal" role="dialog" aria-modal="true" [attr.aria-label]="i18n.t('mo.dialog')" (click)="close()">
+      <div class="mo-modal__frame" (click)="$event.stopPropagation()">
+        @if (!missing().has(reel.id)) {
+          <video [src]="file(reel)" [poster]="thumb(reel)" autoplay loop playsinline controlslist="nodownload"
+            disablepictureinpicture (click)="togglePlay($event)" (error)="fileMissing(reel)"></video>
+        } @else {
+          <iframe [src]="embed()" title="Sky Flower" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        }
+      </div>
+      <button #closeBtn type="button" class="mo-modal__close" [attr.aria-label]="i18n.t('mo.close')" (click)="close()">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+  }
+</section>

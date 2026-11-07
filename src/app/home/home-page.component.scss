@@ -1,0 +1,117 @@
+﻿$ease: cubic-bezier(0.22, 1, 0.36, 1);
+$rose-soft: #d05875;
+$rose-ink: #8a2a4a;
+$ink: #3b2129;
+
+:host {
+  display: block;
+}
+
+// ---- gifting ------------------------------------------------------------------
+.gift {
+  position: relative;
+  padding: 2rem 1.5rem 8rem;
+  background: linear-gradient(180deg, #f7efe6 0%, #fff5f8 100%);
+
+  @media (min-width: 768px) {
+    padding-inline: 3rem;
+  }
+}
+
+.gift__inner {
+  max-width: 88rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.gift__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1.2rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: $rose-ink;
+
+  span {
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $rose-soft);
+  }
+}
+
+.gift__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: $ink;
+
+  em {
+    font-style: italic;
+    color: #d05875;
+  }
+}
+
+.gift__ar {
+  margin: 0.6rem 0 0;
+  font-family: var(--font-ar-display);
+  font-size: 1.6rem;
+  color: $rose-ink;
+}
+
+
+.gift__lead {
+  max-width: 38rem;
+  margin: 1.4rem auto 0;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: rgb(59 33 41 / 0.72);
+}
+
+.gift__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 2.2rem;
+  padding: 1.1rem 2.2rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(120deg, $rose-soft, $rose-ink);
+  box-shadow: 0 24px 44px -20px rgb(208 88 117 / 0.9);
+  transition: transform 0.5s $ease, box-shadow 0.5s $ease;
+
+  svg {
+    transition: transform 0.5s $ease;
+  }
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 30px 54px -20px rgb(208 88 117 / 1);
+    svg {
+      transform: translateX(4px);
+    }
+  }
+}
+
+// Arabic (dir=rtl)
+:host-context([dir='rtl']) {
+  .gift__eyebrow > span {
+    transform: scaleX(-1);
+  }
+  .gift__cta svg {
+    transform: scaleX(-1);
+  }
+  .gift__cta:hover svg {
+    transform: scaleX(-1) translateX(4px);
+  }
+}
+:host-context(html[lang='ar']) .gift__cta {
+  letter-spacing: 0;
+  font-size: 1.1rem;
+}

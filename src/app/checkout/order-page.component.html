@@ -1,0 +1,41 @@
+<main class="op" id="main">
+  <div class="op__bg" aria-hidden="true"></div>
+
+  <div class="op__wrap">
+    <a class="op__back" routerLink="/">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6" />
+      </svg>
+      {{ i18n.t('order.back') }}
+    </a>
+
+    <header class="op__head">
+      <p class="op__eyebrow"><span></span> {{ i18n.t('order.eyebrow') }}</p>
+      <h1 class="op__title">{{ i18n.t('order.title.a') }} <em>{{ i18n.t('order.title.em') }}</em></h1>
+      <p class="op__sub">{{ i18n.t('order.sub') }}</p>
+
+      <ul class="op__facts">
+        <li>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 7h11v9H3z M14 10h4l3 3v3h-7z" /><circle cx="7" cy="17.5" r="1.6" /><circle cx="17" cy="17.5" r="1.6" />
+          </svg>
+          {{ i18n.t('order.i1') }}
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+          </svg>
+          {{ i18n.pick(brand.hoursEn, brand.hoursAr) }}
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a8.5 8.5 0 0 1-12.4 7.5L3 21l1.6-5.3A8.5 8.5 0 1 1 21 12Z" />
+          </svg>
+          {{ i18n.t('order.i3') }}
+        </li>
+      </ul>
+    </header>
+
+    <app-gift-order />
+  </div>
+</main>

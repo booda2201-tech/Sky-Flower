@@ -1,0 +1,51 @@
+<!-- ====================================================================================
+     OCCASIONS - tall cards that filter the catalogue
+     ==================================================================================== -->
+<section id="occasions" class="oc" aria-labelledby="oc-title">
+  <div class="oc__wrap">
+    <header class="oc__head">
+      <p class="oc__eyebrow" data-aos="fade-up"><span></span> {{ i18n.t('oc.eyebrow') }}</p>
+      <h2 id="oc-title" class="oc__title" data-aos="fade-up" data-aos-delay="80">
+        {{ i18n.t('oc.title.a') }} <em>{{ i18n.t('oc.title.em') }}</em>
+      </h2>
+      <p class="oc__sub" data-aos="fade-up" data-aos-delay="140">
+        <span class="oc__rule" aria-hidden="true"><i></i><b></b><i></i></span>
+        {{ i18n.t('oc.sub') }}
+      </p>
+    </header>
+
+    <ul class="oc__grid">
+      @for (c of cards; track c.id; let i = $index) {
+        <li data-aos="fade-up" [attr.data-aos-delay]="i * 90">
+          <a class="oc-card" href="#collections" appTilt="6" [style.--accent]="c.accent"
+            [attr.aria-label]="i18n.t('oc.browse', { name: i18n.pick(c.nameEn, c.nameAr) }) + ' - ' + countLabel(c.count)"
+            (click)="open(c, $event)">
+            <span class="oc-card__glow" aria-hidden="true"></span>
+
+            <span class="oc-card__media">
+              <img [src]="img(c.imageId)" [attr.srcset]="srcset(c.imageId)"
+                sizes="(min-width: 1100px) 18vw, 62vw" [alt]="''" loading="lazy" decoding="async" width="560"
+                height="760" />
+            </span>
+            <span class="oc-card__shade" aria-hidden="true"></span>
+
+            <span class="oc-card__no" aria-hidden="true">N° {{ c.no }}</span>
+
+            <span class="oc-card__body">
+              <span class="oc-card__text">
+                <strong>{{ i18n.pick(c.nameEn, c.nameAr) }}</strong>
+                <small>{{ countLabel(c.count) }}</small>
+              </span>
+              <span class="oc-card__go" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
