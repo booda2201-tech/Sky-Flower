@@ -29,7 +29,7 @@ function stubMatchMedia(): void {
   });
 }
 
-const motionStub = { start: () => {}, scrollTo: vi.fn(), lock: () => {}, unlock: () => {}, prefersReducedMotion: true };
+const motionStub = { start: () => {}, watchVisibility: () => {}, scrollTo: vi.fn(), lock: () => {}, unlock: () => {}, prefersReducedMotion: true };
 
 describe('SkyBot recommendation engine', () => {
   it('always returns two distinct products', () => {

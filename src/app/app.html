@@ -1,5 +1,5 @@
 ﻿@if (!isAdmin()) {
-  <app-site-nav />
+  <app-site-nav [dock]="isHome()" />
 }
 <router-outlet />
 

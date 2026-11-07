@@ -3,7 +3,7 @@ import { I18nService } from '../core/i18n.service';
 import { PageNavService } from '../core/page-nav.service';
 import { StoreService } from '../core/store.service';
 
-type Tab = 'home' | 'shop' | 'design';
+type Tab = 'home' | 'shop' | 'design' | 'gift';
 
 /**
  * Phone-only tab bar: a floating glass pill with the four things people do on the site
@@ -34,6 +34,13 @@ type Tab = 'home' | 'shop' | 'design';
           <path d="M12 21c-1.6-2.6-1.6-5 0-7.5 1.6 2.5 1.6 4.9 0 7.5Z" /><path d="M3 12c2.6-1.6 5-1.6 7.5 0-2.5 1.6-4.9 1.6-7.5 0Z" />
         </svg>
         <span>{{ i18n.t('tabs.design') }}</span>
+      </a>
+      <a href="#gifting" class="mt__tab" [class.is-on]="active() === 'gift'" (click)="go($event, '#gifting')">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13" /><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
+          <path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5" />
+        </svg>
+        <span>{{ i18n.t('tabs.gifts') }}</span>
       </a>
       <button type="button" class="mt__tab" data-bag (click)="store.cartOpen.set(true)" [attr.aria-label]="i18n.t('bag.open')">
         <span class="mt__icon">
@@ -75,7 +82,8 @@ type Tab = 'home' | 'shop' | 'design';
         border: 1px solid rgb(181 66 91 / 0.16);
         border-radius: 1.6rem;
         background: rgb(255 252 249 / 0.84);
-        backdrop-filter: blur(18px) saturate(1.4);
+        -webkit-backdrop-filter: blur(12px) saturate(1.4);
+        backdrop-filter: blur(12px) saturate(1.4);
         box-shadow: 0 20px 44px -18px rgb(59 33 41 / 0.5);
         animation: mt-in 0.9s $ease 0.6s both;
       }
@@ -92,8 +100,9 @@ type Tab = 'home' | 'shop' | 'design';
         border-radius: 1.25rem;
         background: none;
         font: inherit;
-        font-size: 0.66rem;
+        font-size: 0.64rem;
         line-height: 1.2;
+        white-space: nowrap;
         color: rgb(59 33 41 / 0.62);
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
@@ -175,6 +184,8 @@ export class MobileTabsComponent {
       const el = document.getElementById(id);
       return !!el && el.getBoundingClientRect().top <= line;
     };
-    this.active.set(passed('studio') ? 'design' : passed('collections') ? 'shop' : 'home');
+    this.active.set(
+      passed('gifting') ? 'gift' : passed('studio') ? 'design' : passed('collections') ? 'shop' : 'home',
+    );
   }
 }

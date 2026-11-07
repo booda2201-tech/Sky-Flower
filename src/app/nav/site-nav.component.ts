@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, afterNextRender, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, afterNextRender, inject, input, signal } from '@angular/core';
 import { I18nService } from '../core/i18n.service';
 import { MessageKey } from '../core/messages';
 import { PageNavService } from '../core/page-nav.service';
@@ -45,6 +45,12 @@ export class SiteNavComponent {
     { id: 'community', key: 'nav.community' },
     { id: 'gifting', key: 'nav.gifting' },
   ];
+
+  /**
+   * True while the phone tab bar is on screen. On phones the tab bar is then the ONE place for
+   * navigation + the bag, so this bar keeps only the logo and the language switch.
+   */
+  readonly dock = input(false);
 
   protected readonly stuck = signal(false);
   protected readonly open = signal(false);

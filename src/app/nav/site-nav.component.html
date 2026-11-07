@@ -1,4 +1,4 @@
-﻿<header class="nav" [class.is-stuck]="stuck()" [class.is-open]="open()" [class.is-hidden]="hidden()">
+﻿<header class="nav" [class.is-stuck]="stuck()" [class.is-open]="open()" [class.is-hidden]="hidden()" [class.has-dock]="dock()">
   <div class="nav__bar">
     <a href="#top" class="nav__logo" (click)="go($event, '#top')" [attr.aria-label]="i18n.t('hero.homeAria')">
       <svg viewBox="0 0 32 32" width="28" height="28" fill="none" aria-hidden="true">

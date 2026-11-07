@@ -206,6 +206,12 @@ export class BouquetScene {
   private pxCur = 0;
   private pyCur = 0;
   private readonly calm: boolean;
+  // Adaptive resolution (phones): if frames stay slow the canvas quietly renders at a lower pixel
+  // ratio (never below 1), so a weak GPU keeps scrolling smooth. Capable phones never trigger it.
+  private pixelRatio = 1;
+  private readonly adaptive: boolean;
+  private frameEma = 1 / 60;
+  private frameCount = 0;
 
   private constructor(
     private readonly T: typeof THREE,
@@ -228,7 +234,9 @@ export class BouquetScene {
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 0.98;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2));
+    this.pixelRatio = Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2);
+    this.adaptive = coarse && !calm;
+    this.renderer.setPixelRatio(this.pixelRatio);
 
     this.scene = new T.Scene();
     this.camera = new T.PerspectiveCamera(40, 1, 0.05, 80);
@@ -457,6 +465,18 @@ export class BouquetScene {
 
     this.updateCamera();
     this.renderer.render(this.scene, this.camera);
+    if (this.adaptive && dtRaw > 0) this.adaptResolution(dtRaw);
+  }
+
+  /** Steps the pixel ratio down by 0.25 after ~1.5s of sustained slow frames (>~38fps budget missed). */
+  private adaptResolution(dtRaw: number): void {
+    this.frameEma += (dtRaw - this.frameEma) * 0.06;
+    if (++this.frameCount < 90 || this.frameEma < 0.026 || this.pixelRatio <= 1) return;
+    this.pixelRatio = Math.max(1, this.pixelRatio - 0.25);
+    this.renderer.setPixelRatio(this.pixelRatio);
+    this.renderer.setSize(this.width, this.height, false);
+    this.frameCount = 0;
+    this.frameEma = 1 / 60; // judge the new resolution on its own frames
   }
 
   dispose(): void {

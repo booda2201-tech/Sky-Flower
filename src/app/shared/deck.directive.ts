@@ -42,13 +42,18 @@ export class DeckDirective implements OnInit, OnDestroy {
     this.raf = 0;
     const host = this.el.getBoundingClientRect();
     const mid = host.left + host.width / 2;
-    for (const child of Array.from(this.el.children) as HTMLElement[]) {
+    const children = Array.from(this.el.children) as HTMLElement[];
+    // read every position first, then write: interleaving them would force a re-layout per card
+    const offsets = children.map((child) => {
       const r = child.getBoundingClientRect();
-      if (!r.width) continue;
-      const off = (r.left + r.width / 2 - mid) / (r.width * 0.85);
+      return r.width ? (r.left + r.width / 2 - mid) / (r.width * 0.85) : null;
+    });
+    children.forEach((child, i) => {
+      const off = offsets[i];
+      if (off === null) return;
       child.style.setProperty('--deck', Math.min(1, Math.abs(off)).toFixed(3));
       child.style.setProperty('--deck-dir', off < 0 ? '-1' : '1');
-    }
+    });
   }
 
   ngOnDestroy(): void {

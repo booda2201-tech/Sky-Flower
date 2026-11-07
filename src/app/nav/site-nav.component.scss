@@ -386,6 +386,35 @@ $ink: #3b2129;
   }
 }
 
+// ---------------------------------------------------------------------------- phones
+// The bottom tab bar already carries every destination and the bag, so the top bar drops its
+// duplicates (bag + menu) and stays a calm "logo + language" strip.
+@media (max-width: 639px) {
+  .has-dock {
+    .nav__bag,
+    .nav__burger,
+    .nav__sheet {
+      display: none;
+    }
+    .nav__bar {
+      padding-block: 0.3rem;
+    }
+    .nav__lang {
+      padding-inline: 0.9rem;
+    }
+  }
+}
+
+// A lighter frosted-glass blur on touch screens: it sits over the live 3D canvas, so a big
+// radius is re-computed every frame. At these opacities the look is the same.
+@media (max-width: 767px) {
+  .nav__bar,
+  .nav__sheet {
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+    backdrop-filter: blur(12px) saturate(1.5);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nav,
   .nav__sheet {

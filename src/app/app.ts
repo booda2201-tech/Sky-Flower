@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { I18nService } from './core/i18n.service';
@@ -52,6 +52,16 @@ export class App implements AfterViewInit {
     ),
     { initialValue: true },
   );
+
+  constructor() {
+    // a new page brings new sections: let them pause their looping animations while off-screen too
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.motion.watchVisibility());
+  }
 
   ngAfterViewInit(): void {
     // Lenis + AOS start once the DOM exists so AOS can measure the sections.

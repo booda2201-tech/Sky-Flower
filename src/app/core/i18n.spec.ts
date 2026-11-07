@@ -151,7 +151,7 @@ describe('The page in Arabic', () => {
         provideRouter(routes),
         {
           provide: MotionService,
-          useValue: { start: () => {}, scrollTo: () => {}, lock: () => {}, unlock: () => {}, prefersReducedMotion: true },
+          useValue: { start: () => {}, watchVisibility: () => {}, scrollTo: () => {}, lock: () => {}, unlock: () => {}, prefersReducedMotion: true },
         },
       ],
     }).compileComponents();

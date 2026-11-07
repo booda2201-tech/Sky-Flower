@@ -104,6 +104,15 @@ html.lenis body {
   pointer-events: none;
 }
 
+/* A section far from the viewport pauses its looping animations (MotionService.watchVisibility);
+   they pick up exactly where they stopped when it comes back, so nothing looks different. */
+.is-offscreen,
+.is-offscreen *,
+.is-offscreen *::before,
+.is-offscreen *::after {
+  animation-play-state: paused !important;
+}
+
 /* --------------------------------------------------------------------------
    Luxury helpers shared by every section
    -------------------------------------------------------------------------- */
