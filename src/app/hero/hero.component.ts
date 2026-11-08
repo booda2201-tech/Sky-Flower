@@ -104,6 +104,9 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private running = false;
   private inView = true;
   private lastTime = 0;
+  private coarse = false;
+  private vsyncMs = 16.7;
+  private vsyncFrames = 0;
   private resizeObserver?: ResizeObserver;
   private intersectionObserver?: IntersectionObserver;
   private readonly introState = { value: 0 };
@@ -124,6 +127,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     // 60fps stream of events never triggers change detection.
     this.ngZone.runOutsideAngular(async () => {
       window.addEventListener('pointermove', this.onPointerMove, { passive: true });
+      const heroHost = this.heroEl().nativeElement;
+      heroHost.addEventListener('touchstart', this.onTouchStart, { passive: true });
+      heroHost.addEventListener('touchmove', this.onTouchMove, { passive: true });
+      heroHost.addEventListener('touchend', this.onTouchEnd, { passive: true });
+      heroHost.addEventListener('touchcancel', this.onTouchEnd, { passive: true });
       document.addEventListener('pointerleave', this.onPointerLeave);
       window.addEventListener('blur', this.onPointerLeave);
       document.addEventListener('visibilitychange', this.onVisibility);
@@ -141,6 +149,11 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.running = false;
     cancelAnimationFrame(this.rafId);
     window.removeEventListener('pointermove', this.onPointerMove);
+    const heroHost = this.heroEl().nativeElement;
+    heroHost.removeEventListener('touchstart', this.onTouchStart);
+    heroHost.removeEventListener('touchmove', this.onTouchMove);
+    heroHost.removeEventListener('touchend', this.onTouchEnd);
+    heroHost.removeEventListener('touchcancel', this.onTouchEnd);
     document.removeEventListener('pointerleave', this.onPointerLeave);
     window.removeEventListener('blur', this.onPointerLeave);
     document.removeEventListener('visibilitychange', this.onVisibility);
@@ -166,6 +179,7 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private async initScene(): Promise<void> {
     const canvas = this.canvasEl().nativeElement;
     const coarse = matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
+    this.coarse = coarse;
     try {
       const { BouquetScene: Scene } = await import('./bouquet-scene');
       if (this.destroyed) return; // component died while the chunk was loading
@@ -216,7 +230,21 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   private readonly loop = (now: number): void => {
     if (!this.running) return;
     this.rafId = requestAnimationFrame(this.loop);
-    const dt = Math.min((now - this.lastTime) / 1000, 0.05); // clamp: tab-switch spikes
+    const elapsed = now - this.lastTime;
+
+    // Phones with a 120Hz screen would render the whole bouquet twice as often as anyone can
+    // follow: learn the screen's refresh interval from the first frames and, on 120Hz, draw every
+    // other one (a steady 60fps). 60Hz and 90Hz screens are left alone.
+    if (this.vsyncFrames < 40) {
+      if (elapsed > 2 && elapsed < 30) {
+        this.vsyncMs = this.vsyncFrames === 0 ? elapsed : Math.min(this.vsyncMs, elapsed);
+        this.vsyncFrames++;
+      }
+    } else if (this.coarse && this.vsyncMs < 9.5 && elapsed < 12) {
+      return;
+    }
+
+    const dt = Math.min(elapsed / 1000, 0.05); // clamp: tab-switch spikes
     this.lastTime = now;
     this.scene?.render(dt);
   };
@@ -235,6 +263,47 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
   };
 
   private readonly onPointerLeave = (): void => this.scene?.setPointer(0, 0);
+
+  // ---- touch: turn the bouquet round with a finger -----------------------------------
+  // The page keeps vertical scrolling (`touch-action: pan-y` on the hero); a mostly-sideways
+  // drag that starts on empty space (not on a button, link or the featured card) spins the bouquet.
+  private touch: { id: number; x: number; y: number; t: number; mode: 'undecided' | 'spin' | 'scroll' } | null = null;
+
+  private readonly onTouchStart = (e: TouchEvent): void => {
+    if (!this.scene || this.touch || e.touches.length !== 1) return;
+    const target = e.target as Element | null;
+    if (target?.closest('a, button, input, [role="tab"], .hero__pick')) return;
+    const t = e.touches[0];
+    this.touch = { id: t.identifier, x: t.clientX, y: t.clientY, t: performance.now(), mode: 'undecided' };
+  };
+
+  private readonly onTouchMove = (e: TouchEvent): void => {
+    const s = this.touch;
+    if (!s || !this.scene) return;
+    const t = Array.from(e.touches).find((x) => x.identifier === s.id);
+    if (!t) return;
+    if (s.mode === 'undecided') {
+      const dx = t.clientX - s.x;
+      const dy = t.clientY - s.y;
+      if (Math.hypot(dx, dy) < 8) return;
+      s.mode = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'spin' : 'scroll';
+      if (s.mode === 'spin') this.scene.beginDrag();
+      else {
+        this.touch = null;
+        return;
+      }
+    }
+    const now = performance.now();
+    this.scene.dragBy(t.clientX - s.x, Math.max(0.001, (now - s.t) / 1000));
+    s.x = t.clientX;
+    s.y = t.clientY;
+    s.t = now;
+  };
+
+  private readonly onTouchEnd = (): void => {
+    if (this.touch?.mode === 'spin') this.scene?.endDrag();
+    this.touch = null;
+  };
 
   private readonly onVisibility = (): void => this.syncLoop();
 

@@ -743,6 +743,11 @@ $ink-2: #fff5f8;
 // beside the centred one lean back and dim as you scroll (scroll-driven, no JS).
 // ======================================================================================
 @media (max-width: 767px) {
+  // the sort pill sits in the middle on phones, not hugging one edge
+  .sc__sort {
+    align-self: center;
+  }
+
   .sc__grid {
     display: flex;
     align-items: stretch;

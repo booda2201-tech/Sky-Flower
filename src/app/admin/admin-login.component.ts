@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AdminAuthService, DEMO_PASSWORD } from './admin-auth.service';
+import { LogoComponent } from '../shared/logo.component';
 
 /** `/admin/login` - the demo gate. The password is shown on purpose: this is a preview, not a lock. */
 @Component({
   selector: 'app-admin-login',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, LogoComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
     :host {
@@ -60,7 +61,7 @@ import { AdminAuthService, DEMO_PASSWORD } from './admin-auth.service';
   `,
   template: `
     <form class="box" dir="rtl" lang="ar" (submit)="submit($event)">
-      <p class="brand">Sky<em> Flower</em></p>
+      <p class="brand"><app-logo size="lg" /></p>
       <h1>دخول لوحة التحكم</h1>
       <input
         type="password"

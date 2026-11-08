@@ -1,7 +1,14 @@
 import type * as THREE from 'three';
 import type { ParametricGeometry as ParametricGeometryCtor } from 'three/examples/jsm/geometries/ParametricGeometry.js';
 import type { mergeGeometries as MergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { PETAL_BASE_OFFSET, PETAL_VERTEX, leafSurface, petalFragment, petalSurface } from './bloom-shaders';
+import {
+  DEPTH_ONLY_FRAGMENT,
+  PETAL_BASE_OFFSET,
+  PETAL_VERTEX,
+  leafSurface,
+  petalFragment,
+  petalSurface,
+} from './bloom-shaders';
 
 // =======================================================================================
 // A procedural, hand-tied bouquet rendered with Three.js.
@@ -205,7 +212,15 @@ export class BouquetScene {
   private py = 0;
   private pxCur = 0;
   private pyCur = 0;
+  // Free spin: the finger (or a slow automatic turn while nobody touches it) turns the bouquet round.
+  private spin = 0; // radians, kept in -PI..PI
+  private spinVel = 0; // rad/s left over from a flick
+  private dragging = false;
+  private idle = 0; // seconds since the last touch
+  private autoK = 0; // 0..1 ease-in of the automatic turn
   private readonly calm: boolean;
+  /** Phones: petals are drawn as depth first so each pixel is shaded once (see `finishBatch`). */
+  private readonly prepass: boolean;
   // Adaptive resolution (phones): if frames stay slow the canvas quietly renders at a lower pixel
   // ratio (never below 1), so a weak GPU keeps scrolling smooth. Capable phones never trigger it.
   private pixelRatio = 1;
@@ -221,6 +236,7 @@ export class BouquetScene {
   ) {
     this.calm = opts.calm;
     const { coarse, calm } = opts;
+    this.prepass = coarse;
     const lod = coarse ? 0 : 1;
     const rnd = mulberry32(20261101);
 
@@ -407,6 +423,29 @@ export class BouquetScene {
     this.py = y;
   }
 
+  /** A finger went down on the bouquet: stop any automatic / inertial turn. */
+  beginDrag(): void {
+    this.dragging = true;
+    this.spinVel = 0;
+    this.idle = 0;
+  }
+
+  /** The finger moved `dxPx` sideways over `dt` seconds: turn the bouquet with it. */
+  dragBy(dxPx: number, dt: number): void {
+    const rad = dxPx * 0.012;
+    this.spin += rad;
+    if (dt > 0) {
+      const v = Math.max(-14, Math.min(14, rad / dt));
+      this.spinVel += (v - this.spinVel) * 0.5;
+    }
+  }
+
+  /** The finger lifted: the bouquet keeps turning with what is left of the flick, then slows down. */
+  endDrag(): void {
+    this.dragging = false;
+    this.idle = 0;
+  }
+
   /** The bouquet grows in: 0 -> 1. */
   setIntro(v: number): void {
     this.intro = v;
@@ -455,7 +494,21 @@ export class BouquetScene {
     const calmK = this.calm ? 0.25 : 1;
     const settle = 1 - smooth(0.05, 0.7, this.scrollCur);
     const introE = this.intro * this.intro * (3 - 2 * this.intro);
-    this.bouquet.rotation.y = (Math.sin(t * 0.32) * 0.16 + this.pxCur * 0.28) * calmK * settle + (1 - introE) * -0.9;
+    // Free spin: flick inertia, then a slow automatic turn once it has been left alone for a moment.
+    if (!this.dragging) {
+      this.spin += this.spinVel * dtRaw;
+      this.spinVel *= Math.exp(-dtRaw * 2.6);
+      this.idle += dtRaw;
+    }
+    const autoOn = !this.calm && !this.dragging && this.idle > 1.2 && this.intro > 0.95 && this.scrollTarget < 0.03;
+    this.autoK += ((autoOn ? 1 : 0) - this.autoK) * (dtRaw === 0 ? 0 : 1 - Math.exp(-dtRaw * 1.4));
+    this.spin += 0.42 * this.autoK * dtRaw;
+    const TAU = Math.PI * 2;
+    this.spin = ((((this.spin + Math.PI) % TAU) + TAU) % TAU) - Math.PI;
+
+    // The spin eases back to facing front while the camera dives in, so the dive always starts from the front.
+    this.bouquet.rotation.y =
+      (Math.sin(t * 0.32) * 0.16 + this.pxCur * 0.28) * calmK * settle + (1 - introE) * -0.9 + this.spin * settle;
     this.bouquet.rotation.x = -this.pyCur * 0.07 * calmK * settle;
     this.bouquet.position.y = Math.sin(t * 0.55) * 0.05 * calmK * settle;
 
@@ -468,10 +521,10 @@ export class BouquetScene {
     if (this.adaptive && dtRaw > 0) this.adaptResolution(dtRaw);
   }
 
-  /** Steps the pixel ratio down by 0.25 after ~1.5s of sustained slow frames (>~38fps budget missed). */
+  /** Steps the pixel ratio down by 0.25 after ~1s of sustained slow frames (below ~50fps). */
   private adaptResolution(dtRaw: number): void {
     this.frameEma += (dtRaw - this.frameEma) * 0.06;
-    if (++this.frameCount < 90 || this.frameEma < 0.026 || this.pixelRatio <= 1) return;
+    if (++this.frameCount < 60 || this.frameEma < 0.0205 || this.pixelRatio <= 1) return;
     this.pixelRatio = Math.max(1, this.pixelRatio - 0.25);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.renderer.setSize(this.width, this.height, false);
@@ -834,6 +887,30 @@ export class BouquetScene {
     batch.mesh = mesh;
     this.batches.push(batch);
     this.bouquet.add(mesh);
+
+    if (this.prepass) {
+      // Depth pre-pass: the same petals (same vertex shader, same instances and attributes), but with
+      // no colour output. Petals overlap a lot, so without it the heavy petal shading runs for every
+      // layer under a pixel; with it, only for the visible one. The picture is identical - the pass
+      // pushes its depth back by a hair so the colour pass always wins the depth test.
+      const depthMaterial = new T.ShaderMaterial({
+        vertexShader: PETAL_VERTEX,
+        fragmentShader: DEPTH_ONLY_FRAGMENT,
+        uniforms: this.uniforms,
+        defines: { ...(material.defines ?? {}) },
+        side: T.DoubleSide,
+        colorWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1,
+      });
+      this.disposables.push(depthMaterial);
+      const pre = new T.InstancedMesh(geometry, depthMaterial, Math.max(1, n));
+      pre.instanceMatrix = mesh.instanceMatrix; // shared, not copied
+      pre.frustumCulled = false;
+      pre.renderOrder = -10; // before everything else in the opaque pass
+      this.bouquet.add(pre);
+    }
   }
 
   // =====================================================================================

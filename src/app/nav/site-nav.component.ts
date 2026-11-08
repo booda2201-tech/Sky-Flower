@@ -3,6 +3,7 @@ import { I18nService } from '../core/i18n.service';
 import { MessageKey } from '../core/messages';
 import { PageNavService } from '../core/page-nav.service';
 import { StoreService } from '../core/store.service';
+import { LogoComponent } from '../shared/logo.component';
 import { MagneticDirective } from '../shared/magnetic.directive';
 
 interface NavLink {
@@ -29,7 +30,7 @@ const SECTIONS: readonly { readonly id: string; readonly linked: boolean }[] = [
 @Component({
   selector: 'app-site-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MagneticDirective],
+  imports: [MagneticDirective, LogoComponent],
   templateUrl: './site-nav.component.html',
   styleUrl: './site-nav.component.scss',
 })

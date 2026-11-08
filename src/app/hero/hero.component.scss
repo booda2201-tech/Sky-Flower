@@ -28,6 +28,7 @@ $cream: #fbf6f0;
   height: var(--hero-h);
   overflow: hidden;
   isolation: isolate;
+  touch-action: pan-y; // vertical swipes scroll the page; sideways ones turn the bouquet
   background:
     radial-gradient(70% 60% at 88% 8%, #fce4ec 0%, transparent 70%),
     radial-gradient(80% 60% at 4% 104%, rgb(250 214 224 / 0.55) 0%, transparent 66%),
@@ -185,6 +186,11 @@ $cream: #fbf6f0;
   pointer-events: none;
   opacity: 0.06;
   mix-blend-mode: overlay;
+  // A 6% film grain is invisible on a phone screen, but a blend mode makes the GPU re-blend the whole
+  // hero (canvas included) every frame. Not worth it there.
+  @media (max-width: 767px) {
+    display: none;
+  }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 

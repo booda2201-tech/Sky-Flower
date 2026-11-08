@@ -9,7 +9,20 @@ import type * as THREE from 'three';
 // Two flavours share the same code: the OPAQUE one paints the bouquet blooms, the
 // default one (alpha + distance fade) paints the petals drifting around them.
 // =====================================================================================
+/**
+ * Depth-only twin of the petal fragment shader, used by the phone "depth pre-pass": the petals are
+ * laid down as depth first (no colour), so the expensive shading below only ever runs for the petal
+ * that is actually in front at each pixel instead of every layer that overlaps it.
+ */
+export const DEPTH_ONLY_FRAGMENT = /* glsl */ `
+  void main() {
+    gl_FragColor = vec4(1.0);
+  }
+`;
+
 export const PETAL_VERTEX = /* glsl */ `
+  // Same input -> bit-identical position in the pre-pass and the colour pass (no depth fighting).
+  invariant gl_Position;
   uniform float uTime;
   attribute vec3 aTint;
   attribute vec4 aSeed;          // x: phase, y: flutter speed, z: flutter amplitude, w: tone variation

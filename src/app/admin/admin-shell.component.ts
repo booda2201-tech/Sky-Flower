@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, effect, inject, 
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AdminAuthService } from './admin-auth.service';
 import { OrdersService } from './orders.service';
+import { LogoComponent } from '../shared/logo.component';
 
 interface NavLink {
   readonly path: string;
@@ -42,14 +43,14 @@ function chime(): void {
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, LogoComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   styleUrl: './admin.scss',
   template: `
     <div class="ad" dir="rtl" lang="ar">
       <aside class="ad-side">
-        <a class="ad-brand" routerLink="/admin">Sky<em> Flower</em></a>
+        <a class="ad-brand" routerLink="/admin"><app-logo size="sm" /></a>
         <span class="ad-brand__sub">لوحة التحكم</span>
 
         <nav class="ad-nav" aria-label="الإدارة">

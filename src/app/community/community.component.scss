@@ -266,6 +266,75 @@ $ink: #3b2129;
   color: rgb(59 33 41 / 0.65);
 }
 
+// ---- phones ---------------------------------------------------------------------------------
+// The two-column cards are only ~170-190px wide. The round arrow used to float over the corner
+// and sat on top of the network name and the @handle, so it now takes its own cell in the first
+// row (name | arrow), and the handle gets the full card width underneath.
+@media (max-width: 639px) {
+  .so {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.4rem;
+    padding: 1.1rem 1rem 1.1rem;
+
+    > *:not(.so__net):not(.so__go) {
+      grid-column: 1 / -1;
+      min-width: 0;
+    }
+  }
+  .so__net {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    overflow-wrap: anywhere;
+  }
+  .so__go {
+    position: static;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    width: 2rem;
+    height: 2rem;
+  }
+  .so__handle {
+    margin-top: 0.35rem;
+    max-width: 100%;
+    font-size: 0.74rem;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+  .so__n {
+    margin-top: 0.8rem;
+    &--text {
+      font-size: 1.45rem;
+      padding-top: 0.4rem;
+    }
+  }
+}
+
+// very small phones (<= 360px)
+@media (max-width: 374px) {
+  .cm__socials {
+    gap: 0.7rem;
+  }
+  .so {
+    padding: 1rem 0.85rem;
+    border-radius: 1.4rem;
+  }
+  .so__net {
+    font-size: 1.15rem;
+  }
+  .so__n {
+    font-size: 2rem;
+    &--text {
+      font-size: 1.3rem;
+    }
+  }
+  .so__go {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+}
+
 // Arabic (dir=rtl)
 :host-context([dir='rtl']) {
   .cm__eyebrow > span {

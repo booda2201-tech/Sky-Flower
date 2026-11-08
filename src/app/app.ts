@@ -8,13 +8,14 @@ import { BRAND, BRAND_SOCIALS, whatsappLink } from './data/brand';
 import { MobileTabsComponent } from './nav/mobile-tabs.component';
 import { SiteNavComponent } from './nav/site-nav.component';
 import { CartPanelComponent } from './shared/cart-panel.component';
+import { LogoComponent } from './shared/logo.component';
 import { SkyBotComponent } from './skybot/skybot.component';
 
 /** The shell every storefront page shares: nav, the routed page, footer, bag drawer and SkyBot. The admin gets none of it. */
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, SiteNavComponent, MobileTabsComponent, CartPanelComponent, SkyBotComponent],
+  imports: [RouterOutlet, RouterLink, SiteNavComponent, MobileTabsComponent, CartPanelComponent, SkyBotComponent, LogoComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
