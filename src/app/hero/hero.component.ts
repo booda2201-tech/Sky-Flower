@@ -524,6 +524,20 @@ export class HeroComponent implements AfterViewInit, OnDestroy {
     this.restartAutoplay();
   }
 
+  /**
+   * Hovering the card with a mouse holds the colours still so you can read it. A finger never
+   * "leaves" a card the way a mouse does, and a tapped button keeps focus - so on a phone either
+   * of those used to freeze the automatic colour change for good. Touch must not pause it.
+   */
+  protected pauseOnMouse(e: PointerEvent): void {
+    if (e.pointerType === 'mouse') this.pauseAutoplay();
+  }
+
+  /** Same for focus: only keyboard focus (focus-visible) pauses; a tap that happens to focus a button does not. */
+  protected pauseOnKeyboard(e: FocusEvent): void {
+    if ((e.target as Element | null)?.matches(':focus-visible')) this.pauseAutoplay();
+  }
+
   protected pauseAutoplay(): void {
     this.hoverPaused = true;
     this.syncAutoplay();

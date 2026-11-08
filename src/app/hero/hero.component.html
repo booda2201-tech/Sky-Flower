@@ -98,7 +98,7 @@
       <!-- Featured creation: picking one re-dyes the bouquet above. -->
       <article #pick class="hero__pick backdrop-blur-xl bg-white/70 border border-line" data-reveal="pick"
         [style.--accent]="active().accent" aria-live="polite"
-        (pointerenter)="pauseAutoplay()" (pointerleave)="resumeAutoplay()" (focusin)="pauseAutoplay()" (focusout)="resumeAutoplay()">
+        (pointerenter)="pauseOnMouse($event)" (pointerleave)="resumeAutoplay()" (focusin)="pauseOnKeyboard($event)" (focusout)="resumeAutoplay()">
         @for (p of [active()]; track p.id) {
           <img class="hero__pick-img" [src]="img(p.imageId, 160)" alt="" width="80" height="100" decoding="async" />
           <div class="hero__pick-body">
