@@ -15,7 +15,7 @@
     <p class="gift__ar" [attr.lang]="i18n.other()" data-aos="fade-up" data-aos-delay="140">{{ i18n.alt('gift.sub') }}</p>
     <p class="gift__lead" data-aos="fade-up" data-aos-delay="200">{{ i18n.t('gift.lead') }}</p>
 
-    <a class="gift__cta" routerLink="/order" data-aos="fade-up" data-aos-delay="260">
+    <a class="gift__cta" href="#collections" (click)="orderGift($event)" data-aos="fade-up" data-aos-delay="260">
       {{ i18n.t('gift.cta') }}
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M5 12h14M13 6l6 6-6 6" />

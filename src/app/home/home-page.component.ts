@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { CommunityComponent } from '../community/community.component';
 import { I18nService } from '../core/i18n.service';
+import { MotionService } from '../core/motion.service';
 import { HeroComponent } from '../hero/hero.component';
 import { MomentsComponent } from '../moments/moments.component';
 import { OccasionsComponent } from '../occasions/occasions.component';
@@ -19,7 +19,6 @@ import { BuildYourOwnComponent } from '../studio/build-your-own.component';
     CommunityComponent,
     MomentsComponent,
     BuildYourOwnComponent,
-    RouterLink,
   ],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss',
@@ -27,4 +26,11 @@ import { BuildYourOwnComponent } from '../studio/build-your-own.component';
 })
 export class HomePageComponent {
   protected readonly i18n = inject(I18nService);
+  private readonly motion = inject(MotionService);
+
+  /** "Order your gift" always starts from the collection: pick a gift first, check out from the bag. */
+  protected orderGift(event: Event): void {
+    event.preventDefault();
+    this.motion.scrollTo('#collections');
+  }
 }

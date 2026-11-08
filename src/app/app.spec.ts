@@ -148,6 +148,17 @@ describe('App', () => {
     expect(el.querySelector('app-showcase')).toBeNull();
   });
 
+  it('"Order your gift" stays on the storefront and goes to the collection, never straight to checkout', async () => {
+    const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/');
+    TestBed.inject(StoreService).add(FLOWER_PRODUCTS[0]); // even with something in the bag
+    await fixture.whenStable();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.gift__cta')?.click();
+    await fixture.whenStable();
+    expect(router.url).toBe('/');
+  });
+
   it('sends the bag drawer button to the order page', async () => {
     const fixture = TestBed.createComponent(App);
     const router = TestBed.inject(Router);
